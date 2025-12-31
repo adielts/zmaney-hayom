@@ -1,0 +1,1472 @@
+/* ============================================
+   זמני היום - Jewish Prayer Times App
+   Mobile-First Responsive CSS
+   ============================================ */
+
+/* ============================================
+   CSS Custom Properties (Variables)
+   ============================================ */
+:root {
+  /* Primary Colors - Spiritual Theme */
+  --color-primary: #1a365d;
+  --color-primary-light: #2c5282;
+  --color-primary-dark: #0f2442;
+  
+  /* Gold Accents */
+  --color-gold: #d4a857;
+  --color-gold-light: #e6c47a;
+  --color-gold-dark: #b8923e;
+  
+  /* Neutral Colors */
+  --color-white: #ffffff;
+  --color-off-white: #f7f8fa;
+  --color-gray-100: #f1f3f5;
+  --color-gray-200: #e9ecef;
+  --color-gray-300: #dee2e6;
+  --color-gray-400: #ced4da;
+  --color-gray-500: #adb5bd;
+  --color-gray-600: #6c757d;
+  --color-gray-700: #495057;
+  --color-gray-800: #343a40;
+  --color-gray-900: #212529;
+  
+  /* Semantic Colors */
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-error: #dc3545;
+  --color-info: #17a2b8;
+  
+  /* Background Colors */
+  --bg-primary: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #1a365d 100%);
+  --bg-card: var(--color-white);
+  --bg-body: var(--color-off-white);
+  
+  /* Text Colors */
+  --text-primary: var(--color-gray-900);
+  --text-secondary: var(--color-gray-600);
+  --text-light: var(--color-white);
+  --text-gold: var(--color-gold);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
+  --shadow-gold: 0 4px 15px rgba(212, 168, 87, 0.3);
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 50%;
+  
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  
+  /* Typography */
+  --font-family: 'Heebo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-family-hebrew: 'Heebo', 'David Libre', 'Frank Ruhl Libre', serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 2rem;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+  
+  /* Z-Index Scale */
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 300;
+  --z-overlay: 400;
+  --z-toast: 500;
+  
+  /* Safe Area (iPhone Notch) */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+/* ============================================
+   Dark Mode Support
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #2c5282;
+    --color-primary-light: #3d7aed;
+    --color-primary-dark: #1a365d;
+    
+    --bg-card: #1e2a3a;
+    --bg-body: #0f1724;
+    
+    --text-primary: var(--color-gray-100);
+    --text-secondary: var(--color-gray-400);
+    
+    --color-gray-100: #2d3748;
+    --color-gray-200: #4a5568;
+    --color-gray-300: #718096;
+    
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ============================================
+   Reset & Base Styles
+   ============================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-body);
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  direction: rtl;
+  text-align: right;
+  padding-top: var(--safe-area-top);
+  padding-bottom: var(--safe-area-bottom);
+  padding-left: var(--safe-area-left);
+  padding-right: var(--safe-area-right);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   App Container
+   ============================================ */
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================
+   Header Styles
+   ============================================ */
+.header {
+  background: var(--color-primary);
+  color: var(--text-light);
+  padding: var(--space-sm) var(--space-md);
+  padding-top: calc(var(--space-sm) + var(--safe-area-top));
+  text-align: center;
+  position: relative;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.header-content {
+  position: relative;
+  z-index: var(--z-base);
+}
+
+.app-title {
+  font-family: var(--font-family-hebrew);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: 0;
+  letter-spacing: 0.5px;
+}
+
+.app-title-icon {
+  display: inline-block;
+  margin-left: var(--space-sm);
+  font-size: var(--font-size-lg);
+}
+
+.app-subtitle {
+  font-size: var(--font-size-xs);
+  opacity: 0.85;
+  color: var(--color-gold-light);
+}
+
+/* Decorative Star of David */
+.header-decoration {
+  display: none;
+}
+
+.header-decoration-right {
+  display: none;
+}
+
+/* ============================================
+   Location Display Section
+   ============================================ */
+.location-section {
+  background: var(--bg-card);
+  padding: var(--space-lg);
+  margin: var(--space-md);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  border: 2px solid rgba(212, 168, 87, 0.15);
+}
+
+.location-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 1;
+  min-width: 0;
+}
+
+.location-icon {
+  font-size: var(--font-size-xl);
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.location-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.location-name {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.location-coords {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  direction: ltr;
+  text-align: right;
+}
+
+/* ============================================
+   Date Display
+   ============================================ */
+.date-section {
+  text-align: center;
+  padding: var(--space-lg);
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(212, 168, 87, 0.05) 100%);
+  border-radius: var(--radius-xl);
+  margin: var(--space-md);
+  box-shadow: var(--shadow-md);
+  border: 2px solid rgba(212, 168, 87, 0.1);
+}
+
+.hebrew-date {
+  font-family: var(--font-family-hebrew);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
+.gregorian-date {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  direction: ltr;
+  display: inline-block;
+}
+
+/* ============================================
+   Main Content Area
+   ============================================ */
+.main-content {
+  flex: 1;
+  padding: var(--space-md);
+  padding-bottom: calc(var(--space-xl) + var(--safe-area-bottom));
+  margin-top: calc(-1 * var(--space-xl));
+  position: relative;
+  z-index: 10;
+}
+
+/* ============================================
+   Prayer Times Grid
+   ============================================ */
+.times-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+/* Zmanim Grid (alternative name) */
+.zmanim-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+/* Single column for very small screens */
+@media (max-width: 320px) {
+  .times-grid,
+  .zmanim-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Three columns for larger screens */
+@media (min-width: 768px) {
+  .times-grid,
+  .zmanim-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ============================================
+   Next Zman Countdown Section
+   ============================================ */
+.next-zman-section {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  color: var(--text-light);
+  padding: var(--space-xl);\n  border-radius: var(--radius-xl);
+  margin-top: var(--space-lg);
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  border: 3px solid rgba(212, 168, 87, 0.3);
+  border-radius: var(--radius-xl);
+}
+
+.next-zman-label {
+  font-size: var(--font-size-sm);
+  opacity: 0.9;
+  margin-bottom: var(--space-sm);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.next-zman-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.next-zman-name {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gold-light);
+}
+
+.next-zman-countdown {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  direction: ltr;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   Time Card Styles
+   ============================================ */
+.time-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-normal), 
+              box-shadow var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  border: 2px solid rgba(212, 168, 87, 0.1);
+}
+
+.time-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-gold), var(--color-gold-light));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.time-card:hover,
+.time-card:focus-within {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-xl);
+  border-color: rgba(212, 168, 87, 0.3);
+}
+
+.time-card:hover::before,
+.time-card.active::before {
+  opacity: 1;
+}
+
+.time-card.active {
+  border: 3px solid var(--color-gold);
+  box-shadow: var(--shadow-gold);
+  transform: scale(1.05);
+  background: linear-gradient(135deg, rgba(212, 168, 87, 0.1) 0%, var(--bg-card) 100%);
+}
+
+.time-card-icon {
+  font-size: var(--font-size-2xl);
+  margin-bottom: var(--space-sm);
+  display: block;
+}
+
+.time-card-name {
+  font-family: var(--font-family-hebrew);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.time-card-name-english {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-sm);
+  display: block;
+}
+
+.time-card-value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  direction: ltr;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+.time-card-passed {
+  opacity: 0.5;
+}
+
+.time-card-passed .time-card-value {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+/* Special styling for important times */
+.time-card.sunrise {
+  background: linear-gradient(135deg, #fff9e6 0%, #fff 100%);
+}
+
+.time-card.sunset {
+  background: linear-gradient(135deg, #ffe6cc 0%, #fff 100%);
+}
+
+.time-card.shabbat {
+  background: linear-gradient(135deg, #e6f0ff 0%, #fff 100%);
+}
+
+/* צאת הכוכבים - Night time styling */
+.time-card.tzeit {
+  background: linear-gradient(135deg, #1a1f3c 0%, #2d3a5c 50%, #1a2744 100%);
+  color: var(--color-white);
+  border-color: rgba(100, 120, 180, 0.3);
+}
+
+.time-card.tzeit .time-name {
+  color: var(--color-white);
+}
+
+.time-card.tzeit .time-value {
+  color: var(--color-gold-light);
+}
+
+.time-card.tzeit .time-icon {
+  filter: drop-shadow(0 0 8px rgba(255, 215, 100, 0.6));
+}
+
+.time-card.tzeit::before {
+  background: linear-gradient(90deg, rgba(255, 215, 100, 0.6), rgba(200, 180, 255, 0.6));
+}
+
+@media (prefers-color-scheme: dark) {
+  .time-card.sunrise {
+    background: linear-gradient(135deg, #2d2a1f 0%, var(--bg-card) 100%);
+  }
+  
+  .time-card.sunset {
+    background: linear-gradient(135deg, #2d2520 0%, var(--bg-card) 100%);
+  }
+  
+  .time-card.shabbat {
+    background: linear-gradient(135deg, #1f2530 0%, var(--bg-card) 100%);
+  }
+  
+  .time-card.tzeit {
+    background: linear-gradient(135deg, #0d1225 0%, #1a2744 50%, #0d1225 100%);
+  }
+  
+  .settings-item {
+    background: var(--color-gray-800);
+  }
+  
+  .settings-item:hover {
+    background: var(--color-gray-700);
+  }
+  
+  .settings-actions {
+    border-top-color: var(--color-gray-700);
+  }
+}
+
+/* ============================================
+   Filtered/Hidden Zman Cards
+   ============================================ */
+.time-card.filtered-out {
+  display: none !important;
+}
+
+/* ============================================
+   Full Width Cards
+   ============================================ */
+.time-card.full-width {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: right;
+  padding: var(--space-md) var(--space-lg);
+}
+
+.time-card.full-width .time-card-icon {
+  margin-bottom: 0;
+  margin-left: var(--space-md);
+}
+
+.time-card.full-width .time-card-info {
+  flex: 1;
+}
+
+.time-card.full-width .time-card-name {
+  margin-bottom: 0;
+}
+
+/* ============================================
+   Button Styles
+   ============================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  border: none;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:focus {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Primary Button */
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--text-light);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background: var(--color-gray-200);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-gray-300);
+}
+
+/* Gold Button */
+.btn-gold {
+  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+  color: var(--color-primary-dark);
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-gold:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold));
+  box-shadow: var(--shadow-gold);
+}
+
+/* Icon Button */
+.btn-icon {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-icon:hover:not(:disabled) {
+  box-shadow: var(--shadow-md);
+  color: var(--color-gold);
+}
+
+/* Refresh Button */
+.btn-refresh {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.btn-refresh:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: var(--text-light);
+}
+
+.btn-refresh.loading .btn-icon-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Settings Button */
+.btn-settings {
+  position: fixed;
+  bottom: calc(var(--space-lg) + var(--safe-area-bottom));
+  left: var(--space-lg);
+  z-index: var(--z-sticky);
+  box-shadow: var(--shadow-lg);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   Action Bar
+   ============================================ */
+.action-bar {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+/* ============================================
+   Loading Spinner
+   ============================================ */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: var(--space-lg);
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--color-gray-200);
+  border-top-color: var(--color-gold);
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+}
+
+.spinner-small {
+  width: 24px;
+  height: 24px;
+  border-width: 3px;
+}
+
+.spinner-large {
+  width: 64px;
+  height: 64px;
+  border-width: 5px;
+}
+
+.loading-text {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-200) 25%,
+    var(--color-gray-100) 50%,
+    var(--color-gray-200) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-text {
+  height: 1em;
+  margin-bottom: var(--space-sm);
+}
+
+.skeleton-time {
+  height: 1.5em;
+  width: 60%;
+  margin: 0 auto;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ============================================
+   Error Message Styles
+   ============================================ */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+  text-align: center;
+  min-height: 300px;
+}
+
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: var(--space-md);
+  color: var(--color-error);
+}
+
+.error-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.error-message {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+  max-width: 280px;
+}
+
+.error-retry-btn {
+  margin-top: var(--space-md);
+}
+
+/* Alert Banners */
+.alert {
+  padding: var(--space-lg);
+  border-radius: var(--radius-xl);
+  margin: var(--space-md);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  box-shadow: var(--shadow-md);
+  border: 2px solid transparent;
+}
+
+.alert-icon {
+  font-size: var(--font-size-xl);
+  flex-shrink: 0;
+}
+
+.alert-content {
+  flex: 1;
+}
+
+.alert-title {
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-xs);
+}
+
+.alert-error {
+  background: #fde8e8;
+  color: #9b1c1c;
+  border: 1px solid #f8b4b4;
+}
+
+.alert-warning {
+  background: #fdf6b2;
+  color: #8e4b10;
+  border: 1px solid #fce96a;
+}
+
+.alert-info {
+  background: #e1effe;
+  color: #1e429f;
+  border: 1px solid #a4cafe;
+}
+
+.alert-success {
+  background: #def7ec;
+  color: #03543f;
+  border: 1px solid #84e1bc;
+}
+
+@media (prefers-color-scheme: dark) {
+  .alert-error {
+    background: #451a1a;
+    color: #f8b4b4;
+    border-color: #9b1c1c;
+  }
+  
+  .alert-warning {
+    background: #3d3510;
+    color: #fce96a;
+    border-color: #8e4b10;
+  }
+  
+  .alert-info {
+    background: #1a2744;
+    color: #a4cafe;
+    border-color: #1e429f;
+  }
+  
+  .alert-success {
+    background: #0d3321;
+    color: #84e1bc;
+    border-color: #03543f;
+  }
+}
+
+/* ============================================
+   Modal / Settings Panel
+   ============================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: var(--z-overlay);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), 
+              visibility var(--transition-normal);
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: var(--space-lg);
+  padding-bottom: calc(var(--space-lg) + var(--safe-area-bottom));
+  z-index: calc(var(--z-overlay) + 1);
+  transform: translateY(100%);
+  transition: transform var(--transition-normal);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-overlay.active + .modal,
+.modal.active {
+  transform: translateY(0);
+}
+
+.modal-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--color-gray-300);
+  border-radius: var(--radius-full);
+  margin: 0 auto var(--space-lg);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.modal-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: var(--font-size-xl);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--space-sm);
+}
+
+.modal-content {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: var(--space-xs);
+}
+
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: var(--color-gray-100);
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: var(--color-gray-400);
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-500);
+}
+
+/* ============================================
+   Settings Form
+   ============================================ */
+.settings-description {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+.settings-group {
+  margin-bottom: var(--space-lg);
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  background: var(--color-gray-100);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-sm);
+  transition: background var(--transition-fast);
+}
+
+.settings-item:hover {
+  background: var(--color-gray-200);
+}
+
+.settings-item-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.settings-item-icon {
+  font-size: var(--font-size-xl);
+}
+
+.settings-item-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-item-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.settings-item-english {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.settings-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.settings-actions .btn {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.settings-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-sm);
+}
+
+.settings-input {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast);
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.settings-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c757d' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+  padding-left: 36px;
+}
+
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) 0;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  background: var(--color-gray-300);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.toggle-switch.active {
+  background: var(--color-primary);
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 24px;
+  height: 24px;
+  background: var(--color-white);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+
+.toggle-switch.active::after {
+  transform: translateX(-24px);
+}
+
+/* ============================================
+   Countdown Timer
+   ============================================ */
+.countdown-section {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  color: var(--text-light);
+  padding: var(--space-lg);
+  margin: var(--space-md);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.countdown-label {
+  font-size: var(--font-size-sm);
+  opacity: 0.9;
+  margin-bottom: var(--space-xs);
+}
+
+.countdown-event {
+  font-family: var(--font-family-hebrew);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gold-light);
+  margin-bottom: var(--space-sm);
+}
+
+.countdown-time {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  display: inline-block;
+}
+
+.countdown-units {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-lg);
+  margin-top: var(--space-sm);
+}
+
+.countdown-unit {
+  text-align: center;
+}
+
+.countdown-unit-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  display: block;
+}
+
+.countdown-unit-label {
+  font-size: var(--font-size-xs);
+  opacity: 0.8;
+}
+
+/* ============================================
+   Special Shabbat/Holiday Section
+   ============================================ */
+.shabbat-section {
+  background: linear-gradient(135deg, #e6f0ff 0%, #fff 100%);
+  border: 2px solid var(--color-primary-light);
+  padding: var(--space-lg);
+  margin: var(--space-md);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .shabbat-section {
+    background: linear-gradient(135deg, #1f2530 0%, var(--bg-card) 100%);
+    border-color: var(--color-primary);
+  }
+}
+
+.shabbat-icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-sm);
+}
+
+.shabbat-title {
+  font-family: var(--font-family-hebrew);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.shabbat-parasha {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+.shabbat-times {
+  display: flex;
+  justify-content: space-around;
+  gap: var(--space-md);
+}
+
+.shabbat-time-item {
+  text-align: center;
+}
+
+.shabbat-time-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.shabbat-time-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+.footer {
+  text-align: center;
+  padding: var(--space-lg);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-top: var(--space-sm);
+}
+
+.footer-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.footer-link:hover {
+  color: var(--color-gold);
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+.fade-in {
+  animation: fadeIn var(--transition-normal) ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp var(--transition-normal) ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-animation > * {
+  opacity: 0;
+  animation: fadeIn var(--transition-normal) ease-out forwards;
+}
+
+.stagger-animation > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-animation > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-animation > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-animation > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-animation > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-animation > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-animation > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-animation > *:nth-child(8) { animation-delay: 350ms; }
+.stagger-animation > *:nth-child(9) { animation-delay: 400ms; }
+.stagger-animation > *:nth-child(10) { animation-delay: 450ms; }
+.stagger-animation > *:nth-child(11) { animation-delay: 500ms; }
+.stagger-animation > *:nth-child(12) { animation-delay: 550ms; }
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-gold { color: var(--color-gold); }
+
+.font-hebrew { font-family: var(--font-family-hebrew); }
+.font-bold { font-weight: var(--font-weight-bold); }
+.font-semibold { font-weight: var(--font-weight-semibold); }
+
+.mt-sm { margin-top: var(--space-sm); }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+
+.mb-sm { margin-bottom: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+
+.p-sm { padding: var(--space-sm); }
+.p-md { padding: var(--space-md); }
+.p-lg { padding: var(--space-lg); }
+
+.hidden { display: none !important; }
+.visible { visibility: visible; }
+.invisible { visibility: hidden; }
+
+.flex { display: flex; }
+.flex-center { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+
+.rounded { border-radius: var(--radius-md); }
+.rounded-lg { border-radius: var(--radius-lg); }
+.rounded-full { border-radius: var(--radius-full); }
+
+.shadow { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+
+.direction-ltr { direction: ltr; }
+.direction-rtl { direction: rtl; }
+
+/* Accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus Visible */
+.focus-visible:focus {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* Reduce Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .header {
+    background: var(--color-primary);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .btn,
+  .btn-settings,
+  .action-bar {
+    display: none;
+  }
+  
+  .time-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid var(--color-gray-300);
+  }
+}
+
+/* ============================================
+   iPhone PWA Optimizations
+   ============================================ */
+
+/* Prevent text selection on double-tap */
+.app-container {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection only where needed */
+.time-value,
+.location-name,
+.hebrew-date,
+.gregorian-date {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Smooth scrolling on iOS */
+.modal-content,
+.main-content {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent zoom on input focus */
+input, select, textarea {
+  font-size: 16px !important;
+}
+
+/* Status bar background for standalone mode */
+@media all and (display-mode: standalone) {
+  .header {
+    padding-top: calc(var(--space-md) + env(safe-area-inset-top));
+  }
+  
+  body {
+    background: var(--color-primary);
+  }
+}
+
+/* Fix for notch on newer iPhones */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .header {
+    padding-top: calc(var(--space-sm) + env(safe-area-inset-top));
+  }
+  
+  .btn-settings {
+    bottom: calc(var(--space-lg) + env(safe-area-inset-bottom));
+  }
+}
