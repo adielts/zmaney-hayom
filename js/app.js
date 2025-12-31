@@ -48,8 +48,8 @@ async function init() {
     // Display current date
     displayDates();
     
-    // Load zmanim
-    await loadZmanim(true); // Use cache on initial load
+    // Load zmanim - don't use cache on initial load to request location permission
+    await loadZmanim(false);
     
     // Update countdown every second
     startCountdown();
@@ -167,9 +167,18 @@ async function loadZmanim(useCache = false) {
     hideError();
     
     try {
-        // Get location
+        // Get location - don't use cache on first load to ensure we request permission
         const location = await getLocationDataWithFallback(useCache);
         elements.locationName.textContent = location.cityName;
+        
+        // Show a hint if using default location
+        if (location.isDefault) {
+            elements.locationName.style.color = 'var(--color-warning)';
+            elements.locationName.title = 'לחץ על כפתור הרענון לאיתור מיקום מדויק';
+        } else {
+            elements.locationName.style.color = '';
+            elements.locationName.title = '';
+        }
         
         // Fetch zmanim
         const zmanim = await fetchZmanim(

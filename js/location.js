@@ -219,12 +219,12 @@ async function getLocationData(useCache = true) {
 
 /**
  * Gets location data with fallback to default location
- * @param {Object} defaultLocation - Default location to use if geolocation fails
+ * @param {boolean} useCache - Whether to use cached data if available
  * @returns {Promise<Object>} Location data
  */
-async function getLocationDataWithFallback(defaultLocation = null) {
+async function getLocationDataWithFallback(useCache = true) {
     try {
-        return await getLocationData();
+        return await getLocationData(useCache);
     } catch (error) {
         console.warn('Geolocation failed, checking cache or using default:', error.message);
         
@@ -234,21 +234,12 @@ async function getLocationDataWithFallback(defaultLocation = null) {
             return cached;
         }
 
-        // Use provided default or Jerusalem as ultimate fallback
-        if (defaultLocation) {
-            return {
-                ...defaultLocation,
-                fromCache: false,
-                isDefault: true
-            };
-        }
-
-        // Default to Jerusalem
+        // Default to Jerusalem with a flag indicating it's a fallback
         return {
             latitude: 31.7683,
             longitude: 35.2137,
             timezone: 'Asia/Jerusalem',
-            cityName: 'Jerusalem',
+            cityName: 'ירושלים (מיקום ברירת מחדל)',
             fromCache: false,
             isDefault: true
         };
