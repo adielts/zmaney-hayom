@@ -182,7 +182,7 @@ async function fetchZmanim(latitude, longitude, timezone) {
             sofZmanShmaMGA: {
                 time: times.sofZmanShmaMGA,
                 formatted: formatTime(times.sofZmanShmaMGA),
-                hebrew: 'סוף זמן ק"ש מג"א',
+                hebrew: 'סוף זמן ק"ש מגן אברהם',
                 english: 'Latest Shema MGA'
             },
             // סוף זמן תפילה - Latest Shacharit (GR"A - used by אור החיים)
@@ -196,7 +196,7 @@ async function fetchZmanim(latitude, longitude, timezone) {
             sofZmanTfillaMGA: {
                 time: times.sofZmanTfillaMGA,
                 formatted: formatTime(times.sofZmanTfillaMGA),
-                hebrew: 'סוף זמן תפילה מג"א',
+                hebrew: 'סוף זמן תפילה מגן אברהם',
                 english: 'Latest Shacharit MGA'
             },
             // חצות היום - Midday
