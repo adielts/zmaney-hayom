@@ -175,8 +175,8 @@ async function fetchZmanim(latitude, longitude, timezone) {
             sofZmanShma: {
                 time: times.sofZmanShma,
                 formatted: formatTime(times.sofZmanShma),
-                hebrew: 'סוף זמן ק"ש',
-                english: 'Latest Shema'
+                hebrew: 'סוף זמן ק"ש גר"א',
+                english: 'Latest Shema GRA'
             },
             // סוף זמן ק"ש - Latest Shema (MG"A)
             sofZmanShmaMGA: {
@@ -189,8 +189,8 @@ async function fetchZmanim(latitude, longitude, timezone) {
             sofZmanTfilla: {
                 time: times.sofZmanTfilla,
                 formatted: formatTime(times.sofZmanTfilla),
-                hebrew: 'סוף זמן תפילה',
-                english: 'Latest Shacharit'
+                hebrew: 'סוף זמן תפילה גר"א',
+                english: 'Latest Shacharit GRA'
             },
             // סוף זמן תפילה - Latest Shacharit (MG"A)
             sofZmanTfillaMGA: {
