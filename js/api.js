@@ -272,7 +272,7 @@ async function fetchZmanim(latitude, longitude, timezone) {
  */
 function getZmanimList(zmanim) {
     const keys = [
-        'dawn', 'sunrise', 'sofZmanShmaMGA', 'sofZmanShma', 'sofZmanTfillaMGA', 'sofZmanTfilla',
+        'dawn', 'sunrise', 'sofZmanShmaMGA', 'sofZmanShmaGRA', 'sofZmanTfillaMGA', 'sofZmanTfillaGRA',
         'chatzot', 'minchaGedola', 'minchaKetana',
         'plagHaMincha', 'sunset', 'tzeit'
     ];
