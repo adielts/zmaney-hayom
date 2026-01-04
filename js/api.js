@@ -45,14 +45,18 @@ function calculateTzeitOhrHachaim(sunsetTime, latitude) {
     
     // אור החיים uses approximately 8.5° below horizon
     // This translates to different minutes based on season and latitude
-    // Winter (Nov-Feb): ~17-18 minutes
+    // Winter (Dec-Jan): ~18 minutes in Jerusalem
+    // Late Winter (Nov, Feb): ~17-19 minutes
     // Spring/Fall: ~20-22 minutes  
     // Summer (May-Aug): ~25-30 minutes
     
     let minutesAfterSunset;
     
-    if (month >= 10 || month <= 1) {
-        // Winter (Nov-Feb)
+    if (month === 0 || month === 11) {
+        // December-January (middle of winter)
+        minutesAfterSunset = 18;
+    } else if (month === 1 || month === 10) {
+        // November, February
         minutesAfterSunset = 17;
     } else if (month >= 4 && month <= 7) {
         // Summer (May-Aug)
@@ -270,21 +274,21 @@ async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
                 };
             }
             
-            // Havdalah - estimated for Saturday evening
+            // צאת השבת - estimated for Saturday evening
             const estimatedHavdalah = new Date(tzeitOhrHachaim);
             estimatedHavdalah.setDate(estimatedHavdalah.getDate() + 1);
             zmanim.havdalah = {
                 time: estimatedHavdalah.toISOString(),
                 formatted: formatTime(estimatedHavdalah.toISOString()),
-                hebrew: 'הבדלה',
+                hebrew: 'צאת השבת',
                 english: 'Havdalah'
             };
         } else if (dayOfWeek === 6) {
-            // Saturday - show only Havdalah
+            // Saturday - show only צאת השבת
             zmanim.havdalah = {
                 time: tzeitOhrHachaim,
                 formatted: formatTime(tzeitOhrHachaim),
-                hebrew: 'הבדלה',
+                hebrew: 'צאת השבת',
                 english: 'Havdalah'
             };
         }

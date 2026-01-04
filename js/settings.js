@@ -40,7 +40,7 @@ const ZMANIM_METADATA = [
     { key: 'candleLighting', hebrew: 'הדלקת נרות', english: 'Candle Lighting', icon: '🕯️' },
     { key: 'sunset', hebrew: 'שקיעת החמה', english: 'Sunset', icon: '🌅' },
     { key: 'tzeit', hebrew: 'צאת הכוכבים', english: 'Nightfall', icon: '🌙' },
-    { key: 'havdalah', hebrew: 'הבדלה', english: 'Havdalah', icon: '🍷' }
+    { key: 'havdalah', hebrew: 'צאת השבת', english: 'Havdalah', icon: '🍷' }
 ];
 
 /**
