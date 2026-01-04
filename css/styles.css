@@ -116,8 +116,8 @@
     --bg-card: #1e2a3a;
     --bg-body: #0f1724;
     
-    --text-primary: var(--color-gray-100);
-    --text-secondary: var(--color-gray-400);
+    --text-primary: #e2e8f0;
+    --text-secondary: #a0aec0;
     
     --color-gray-100: #2d3748;
     --color-gray-200: #4a5568;
@@ -126,6 +126,15 @@
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Card titles in dark mode */
+  .time-name {
+    color: #e2e8f0 !important;
+  }
+  
+  .time-value {
+    color: #90cdf4 !important;
   }
 }
 
@@ -505,6 +514,11 @@ body {
 .time-card.havdalah {
   background: linear-gradient(135deg, #f3e8ff 0%, #faf5ff 100%);
   border: 2px solid rgba(139, 92, 246, 0.3);
+}
+
+.time-card.havdalah-rt {
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  border: 2px solid rgba(76, 175, 80, 0.3);
 }
 
 /* צאת הכוכבים - Night time styling */

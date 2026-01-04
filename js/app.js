@@ -276,6 +276,7 @@ function displayZmanim(zmanim) {
         if (zman.key === 'tzeit') cardClass += ' tzeit';
         if (zman.key === 'candleLighting') cardClass += ' shabbat candle-lighting';
         if (zman.key === 'havdalah') cardClass += ' shabbat havdalah';
+        if (zman.key === 'havdalahRT') cardClass += ' shabbat havdalah-rt';
         if (!isVisible) cardClass += ' filtered-out';
         
         return `
@@ -306,6 +307,7 @@ function getZmanIcon(key) {
         sofZmanTfillaGRA: '🙏',
         candleLighting: '🕯️',
         havdalah: '🍷',
+        havdalahRT: '✨',
         sofZmanTfillaMGA: '🙏',
         chatzot: '🕛',
         minchaGedola: '🕐',

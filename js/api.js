@@ -328,14 +328,32 @@ async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
                 hebrew: 'צאת השבת',
                 english: 'Shabbat Ends'
             };
+            
+            // צאת שבת ר"ת - Rabbeinu Tam (72 minutes after sunset)
+            const tzeitShabbatRT = new Date(saturdaySunset.getTime() + 72 * 60 * 1000);
+            zmanim.havdalahRT = {
+                time: tzeitShabbatRT.toISOString(),
+                formatted: formatTime(tzeitShabbatRT.toISOString()),
+                hebrew: 'צאת שבת ר"ת',
+                english: 'Shabbat Ends RT'
+            };
         } else if (dayOfWeek === 6) {
-            // Saturday - show only צאת השבת
+            // Saturday - show צאת השבת and צאת שבת ר"ת
             const tzeitShabbat = calculateTzeitShabbat(times.sunset, latitude);
             zmanim.havdalah = {
                 time: tzeitShabbat,
                 formatted: formatTime(tzeitShabbat),
                 hebrew: 'צאת השבת',
                 english: 'Shabbat Ends'
+            };
+            
+            // צאת שבת ר"ת - Rabbeinu Tam (72 minutes after sunset)
+            const tzeitShabbatRT = new Date(new Date(times.sunset).getTime() + 72 * 60 * 1000);
+            zmanim.havdalahRT = {
+                time: tzeitShabbatRT.toISOString(),
+                formatted: formatTime(tzeitShabbatRT.toISOString()),
+                hebrew: 'צאת שבת ר"ת',
+                english: 'Shabbat Ends RT'
             };
         }
         
@@ -381,7 +399,8 @@ function getZmanimList(zmanim) {
         'candleLighting',  // Friday evening
         'sunset', 
         'tzeit',
-        'havdalah'         // Saturday evening
+        'havdalah',        // צאת השבת
+        'havdalahRT'       // צאת שבת ר"ת
     ];
     
     return keys
