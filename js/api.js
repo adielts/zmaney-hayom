@@ -33,8 +33,7 @@ function formatTime(isoString) {
 
 /**
  * Calculate צאת הכוכבים according to אור החיים
- * Based on sun being 8.5° below horizon
- * In Israel winter this is approximately 13 minutes after sunset
+ * Adjusted for Hebcal API base times
  * @param {string} sunsetTime - ISO timestamp of sunset
  * @param {number} latitude - Location latitude
  * @returns {string} ISO timestamp for tzeit
@@ -43,26 +42,26 @@ function calculateTzeitOhrHachaim(sunsetTime, latitude) {
     const sunset = new Date(sunsetTime);
     const month = sunset.getMonth();
     
-    // אור החיים times based on calendar:
-    // Winter (Dec-Jan): ~13 minutes after sunset
-    // Late Winter (Nov, Feb): ~14-15 minutes
-    // Spring/Fall: ~18-20 minutes  
-    // Summer (May-Aug): ~22-25 minutes
+    // אור החיים times adjusted for Hebcal API:
+    // Winter (Dec-Jan): 16 minutes (API sunset + 16 = אור החיים tzeit)
+    // Late Winter (Nov, Feb): ~17-18 minutes
+    // Spring/Fall: ~20-22 minutes  
+    // Summer (May-Aug): ~26-28 minutes
     
     let minutesAfterSunset;
     
     if (month === 0 || month === 11) {
-        // December-January (middle of winter)
-        minutesAfterSunset = 13;
+        // December-January
+        minutesAfterSunset = 16;
     } else if (month === 1 || month === 10) {
         // November, February
-        minutesAfterSunset = 15;
+        minutesAfterSunset = 18;
     } else if (month >= 4 && month <= 7) {
         // Summer (May-Aug)
-        minutesAfterSunset = 24;
+        minutesAfterSunset = 27;
     } else {
         // Spring/Fall (Mar-Apr, Sep-Oct)
-        minutesAfterSunset = 18;
+        minutesAfterSunset = 21;
     }
     
     // Adjust for latitude (higher latitude = longer twilight)
@@ -75,8 +74,7 @@ function calculateTzeitOhrHachaim(sunsetTime, latitude) {
 
 /**
  * Calculate צאת השבת according to אור החיים
- * More stringent calculation for Shabbat ending
- * Uses approximately 31 minutes after sunset in winter
+ * Adjusted for Hebcal API base times
  * @param {string} sunsetTime - ISO timestamp of sunset
  * @param {number} latitude - Location latitude
  * @returns {string} ISO timestamp for tzeitShabbat
@@ -85,26 +83,26 @@ function calculateTzeitShabbat(sunsetTime, latitude) {
     const sunset = new Date(sunsetTime);
     const month = sunset.getMonth();
     
-    // אור החיים times for צאת השבת based on calendar:
-    // Winter (Dec-Jan): ~31 minutes after sunset
-    // November, February: ~29-30 minutes
-    // Spring/Fall: ~27-28 minutes
-    // Summer: ~32-35 minutes
+    // אור החיים times for צאת השבת adjusted for Hebcal API:
+    // Winter (Dec-Jan): 34 minutes (API sunset + 34 = אור החיים tzeitShabbat)
+    // November, February: ~32 minutes
+    // Spring/Fall: ~30 minutes
+    // Summer: ~36-38 minutes
     
     let minutesAfterSunset;
     
     if (month === 0 || month === 11) {
         // December-January
-        minutesAfterSunset = 31;
+        minutesAfterSunset = 34;
     } else if (month === 1 || month === 10) {
         // November, February
-        minutesAfterSunset = 29;
+        minutesAfterSunset = 32;
     } else if (month >= 4 && month <= 7) {
         // Summer (May-Aug)
-        minutesAfterSunset = 34;
+        minutesAfterSunset = 37;
     } else {
         // Spring/Fall (Mar-Apr, Sep-Oct)
-        minutesAfterSunset = 27;
+        minutesAfterSunset = 30;
     }
     
     // Adjust for latitude (higher latitude = longer twilight)
@@ -117,7 +115,7 @@ function calculateTzeitShabbat(sunsetTime, latitude) {
 
 /**
  * Calculate עלות השחר according to אור החיים
- * Based on sun being 16.1° below horizon
+ * Adjusted for Hebcal API base times
  * @param {string} sunriseTime - ISO timestamp of sunrise
  * @param {number} latitude - Location latitude
  * @returns {string} ISO timestamp for alot
@@ -126,26 +124,26 @@ function calculateAlotOhrHachaim(sunriseTime, latitude) {
     const sunrise = new Date(sunriseTime);
     const month = sunrise.getMonth();
     
-    // אור החיים times for עלות השחר based on calendar:
-    // Winter (Dec-Jan): ~67 minutes before sunrise
+    // אור החיים times for עלות השחר adjusted for Hebcal API:
+    // Winter (Dec-Jan): 68 minutes (API sunrise - 68 = אור החיים alot)
     // November, February: ~70 minutes
-    // Spring/Fall: ~75-80 minutes
-    // Summer: ~85-90 minutes
+    // Spring/Fall: ~78-80 minutes
+    // Summer: ~88-90 minutes
     
     let minutesBeforeSunrise;
     
     if (month === 0 || month === 11) {
         // December-January
-        minutesBeforeSunrise = 67;
+        minutesBeforeSunrise = 68;
     } else if (month === 1 || month === 10) {
         // November, February
         minutesBeforeSunrise = 70;
     } else if (month >= 4 && month <= 7) {
         // Summer (May-Aug)
-        minutesBeforeSunrise = 88;
+        minutesBeforeSunrise = 89;
     } else {
         // Spring/Fall (Mar-Apr, Sep-Oct)
-        minutesBeforeSunrise = 78;
+        minutesBeforeSunrise = 79;
     }
     
     // Adjust for latitude
@@ -310,9 +308,9 @@ async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
         if (dayOfWeek === 5) {
             // Friday - show both Candle Lighting and צאת השבת
             if (times.sunset) {
-                // הדלקת נרות - 21 minutes before sunset per אור החיים
+                // הדלקת נרות - 18 minutes before API sunset (adjusted for אור החיים)
                 const candleTime = new Date(times.sunset);
-                candleTime.setMinutes(candleTime.getMinutes() - 21);
+                candleTime.setMinutes(candleTime.getMinutes() - 18);
                 zmanim.candleLighting = {
                     time: candleTime.toISOString(),
                     formatted: formatTime(candleTime.toISOString()),
@@ -334,8 +332,8 @@ async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
                 english: 'Shabbat Ends'
             };
             
-            // צאת שבת ר"ת - Rabbeinu Tam (65 minutes after sunset per אור החיים)
-            const tzeitShabbatRT = new Date(saturdaySunset.getTime() + 65 * 60 * 1000);
+            // צאת שבת ר"ת - Rabbeinu Tam (68 minutes after API sunset = אור החיים 18:02)
+            const tzeitShabbatRT = new Date(saturdaySunset.getTime() + 68 * 60 * 1000);
             zmanim.havdalahRT = {
                 time: tzeitShabbatRT.toISOString(),
                 formatted: formatTime(tzeitShabbatRT.toISOString()),
@@ -352,8 +350,8 @@ async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
                 english: 'Shabbat Ends'
             };
             
-            // צאת שבת ר"ת - Rabbeinu Tam (65 minutes after sunset per אור החיים)
-            const tzeitShabbatRT = new Date(new Date(times.sunset).getTime() + 65 * 60 * 1000);
+            // צאת שבת ר"ת - Rabbeinu Tam (68 minutes after API sunset = אור החיים)
+            const tzeitShabbatRT = new Date(new Date(times.sunset).getTime() + 68 * 60 * 1000);
             zmanim.havdalahRT = {
                 time: tzeitShabbatRT.toISOString(),
                 formatted: formatTime(tzeitShabbatRT.toISOString()),
