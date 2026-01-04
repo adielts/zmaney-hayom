@@ -259,7 +259,7 @@ async function loadZmanim(useCache = false) {
  */
 function displayZmanim(zmanim) {
     const zmanimList = getZmanimList(zmanim);
-    const now = new Date();
+    const now = getCurrentDate();
     
     const html = zmanimList.map((zman, index) => {
         const time = new Date(zman.time);
