@@ -75,6 +75,48 @@ function calculateTzeitOhrHachaim(sunsetTime, latitude) {
 }
 
 /**
+ * Calculate צאת השבת according to אור החיים
+ * More stringent calculation for Shabbat ending
+ * Uses approximately 34-35 minutes after sunset in winter
+ * @param {string} sunsetTime - ISO timestamp of sunset
+ * @param {number} latitude - Location latitude
+ * @returns {string} ISO timestamp for tzeitShabbat
+ */
+function calculateTzeitShabbat(sunsetTime, latitude) {
+    const sunset = new Date(sunsetTime);
+    const month = sunset.getMonth();
+    
+    // אור החיים uses more stringent time for צאת השבת
+    // Winter (Dec-Jan): ~34-35 minutes after sunset
+    // November, February: ~32-33 minutes
+    // Spring/Fall: ~30-32 minutes
+    // Summer: ~35-40 minutes
+    
+    let minutesAfterSunset;
+    
+    if (month === 0 || month === 11) {
+        // December-January
+        minutesAfterSunset = 34;
+    } else if (month === 1 || month === 10) {
+        // November, February
+        minutesAfterSunset = 32;
+    } else if (month >= 4 && month <= 7) {
+        // Summer (May-Aug)
+        minutesAfterSunset = 38;
+    } else {
+        // Spring/Fall (Mar-Apr, Sep-Oct)
+        minutesAfterSunset = 30;
+    }
+    
+    // Adjust for latitude (higher latitude = longer twilight)
+    const latitudeAdjustment = Math.abs(latitude - 31.78) * 0.3; // Base: Jerusalem
+    minutesAfterSunset += latitudeAdjustment;
+    
+    const tzeitShabbat = new Date(sunset.getTime() + minutesAfterSunset * 60 * 1000);
+    return tzeitShabbat.toISOString();
+}
+
+/**
  * Calculate עלות השחר according to אור החיים
  * Based on sun being 16.1° below horizon
  * @param {string} sunriseTime - ISO timestamp of sunrise
@@ -262,7 +304,7 @@ async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
         
         // Add Shabbat times based on day of week
         if (dayOfWeek === 5) {
-            // Friday - show both Candle Lighting and estimated Havdalah
+            // Friday - show both Candle Lighting and צאת השבת
             if (times.sunset) {
                 const candleTime = new Date(times.sunset);
                 candleTime.setMinutes(candleTime.getMinutes() - 18);
@@ -274,22 +316,26 @@ async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
                 };
             }
             
-            // צאת השבת - estimated for Saturday evening
-            const estimatedHavdalah = new Date(tzeitOhrHachaim);
-            estimatedHavdalah.setDate(estimatedHavdalah.getDate() + 1);
+            // צאת השבת - calculated for Saturday evening using Saturday's sunset
+            // For now, estimate Saturday sunset as ~1 minute later than Friday
+            const saturdaySunset = new Date(times.sunset);
+            saturdaySunset.setDate(saturdaySunset.getDate() + 1);
+            saturdaySunset.setMinutes(saturdaySunset.getMinutes() + 1);
+            const tzeitShabbat = calculateTzeitShabbat(saturdaySunset.toISOString(), latitude);
             zmanim.havdalah = {
-                time: estimatedHavdalah.toISOString(),
-                formatted: formatTime(estimatedHavdalah.toISOString()),
+                time: tzeitShabbat,
+                formatted: formatTime(tzeitShabbat),
                 hebrew: 'צאת השבת',
-                english: 'Havdalah'
+                english: 'Shabbat Ends'
             };
         } else if (dayOfWeek === 6) {
             // Saturday - show only צאת השבת
+            const tzeitShabbat = calculateTzeitShabbat(times.sunset, latitude);
             zmanim.havdalah = {
-                time: tzeitOhrHachaim,
-                formatted: formatTime(tzeitOhrHachaim),
+                time: tzeitShabbat,
+                formatted: formatTime(tzeitShabbat),
                 hebrew: 'צאת השבת',
-                english: 'Havdalah'
+                english: 'Shabbat Ends'
             };
         }
         
