@@ -37,7 +37,7 @@ export async function searchLocations(query) {
 
         return results.map(result => {
             const address = result.address || {};
-            const suburb = address.suburb || address.neighbourhood || '';
+            const name = address.name || '';
             const city = address.city || address.town || address.village || '';
             const country = address.country || '';
             
@@ -48,7 +48,7 @@ export async function searchLocations(query) {
             const displayName = parts.join(', ');
             
             return {
-                name: suburb || city || result.display_name.split(',')[0],
+                name: name || result.display_name.split(',')[0],
                 displayName: displayName || result.display_name,
                 latitude: parseFloat(result.lat),
                 longitude: parseFloat(result.lon),
