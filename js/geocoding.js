@@ -41,9 +41,8 @@ export async function searchLocations(query) {
             const city = address.city || address.town || address.village || '';
             const country = address.country || '';
             
-            // Build display name: suburb (if exists), city, country
+            // Build display name: city, country
             const parts = [];
-            if (suburb) parts.push(suburb);
             if (city) parts.push(city);
             if (country) parts.push(country);
             const displayName = parts.join(', ');
