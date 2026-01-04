@@ -18,8 +18,10 @@ const DEFAULT_SETTINGS = {
         minchaGedola: true,
         minchaKetana: true,
         plagHaMincha: true,
+        candleLighting: true,
         sunset: true,
-        tzeit: true
+        tzeit: true,
+        havdalah: true
     }
 };
 
@@ -35,8 +37,10 @@ const ZMANIM_METADATA = [
     { key: 'minchaGedola', hebrew: 'מנחה גדולה', english: 'Earliest Mincha', icon: '🕐' },
     { key: 'minchaKetana', hebrew: 'מנחה קטנה', english: 'Mincha Ketana', icon: '🕓' },
     { key: 'plagHaMincha', hebrew: 'פלג המנחה', english: 'Plag HaMincha', icon: '🌤️' },
+    { key: 'candleLighting', hebrew: 'הדלקת נרות', english: 'Candle Lighting', icon: '🕯️' },
     { key: 'sunset', hebrew: 'שקיעת החמה', english: 'Sunset', icon: '🌅' },
-    { key: 'tzeit', hebrew: 'צאת הכוכבים', english: 'Nightfall', icon: '🌙' }
+    { key: 'tzeit', hebrew: 'צאת הכוכבים', english: 'Nightfall', icon: '🌙' },
+    { key: 'havdalah', hebrew: 'הבדלה', english: 'Havdalah', icon: '🍷' }
 ];
 
 /**

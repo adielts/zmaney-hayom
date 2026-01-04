@@ -34,6 +34,7 @@ const elements = {
     nextZman: document.getElementById('next-zman'),
     nextZmanName: document.getElementById('next-zman-name'),
     nextZmanCountdown: document.getElementById('next-zman-countdown'),
+    nextZmanTime: document.getElementById('next-zman-time'),
     
     // Location Modal elements
     locationModal: document.getElementById('location-modal'),
@@ -250,6 +251,8 @@ function displayZmanim(zmanim) {
         if (zman.key === 'sunrise') cardClass += ' sunrise';
         if (zman.key === 'sunset') cardClass += ' sunset';
         if (zman.key === 'tzeit') cardClass += ' tzeit';
+        if (zman.key === 'candleLighting') cardClass += ' shabbat candle-lighting';
+        if (zman.key === 'havdalah') cardClass += ' shabbat havdalah';
         if (!isVisible) cardClass += ' filtered-out';
         
         return `
@@ -278,6 +281,8 @@ function getZmanIcon(key) {
         sofZmanShmaGRA: '📖',
         sofZmanShmaMGA: '📖',
         sofZmanTfillaGRA: '🙏',
+        candleLighting: '🕯️',
+        havdalah: '🍷',
         sofZmanTfillaMGA: '🙏',
         chatzot: '🕛',
         minchaGedola: '🕐',
@@ -319,6 +324,9 @@ function updateNextZman() {
         } else {
             elements.nextZmanCountdown.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
+        
+        // Show the actual time
+        elements.nextZmanTime.textContent = `(${nextZman.formatted})`;
     } else {
         elements.nextZman.style.display = 'none';
     }

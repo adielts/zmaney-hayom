@@ -240,7 +240,21 @@ async function fetchZmanim(latitude, longitude, timezone) {
                 formatted: formatTime(tzeitOhrHachaim),
                 hebrew: 'צאת הכוכבים',
                 english: 'Nightfall'
-            }
+            },
+            // הדלקת נרות - Candle Lighting (18 minutes before sunset on Friday)
+            candleLighting: times.candleLighting ? {
+                time: times.candleLighting,
+                formatted: formatTime(times.candleLighting),
+                hebrew: 'הדלקת נרות',
+                english: 'Candle Lighting'
+            } : null,
+            // הבדלה - Havdalah (after tzeit on Saturday)
+            havdalah: times.havdalah ? {
+                time: times.havdalah,
+                formatted: formatTime(times.havdalah),
+                hebrew: 'הבדלה',
+                english: 'Havdalah'
+            } : null
         };
         
         // Add metadata
@@ -274,10 +288,21 @@ function getZmanimList(zmanim) {
     const keys = [
         'dawn', 'sunrise', 'sofZmanShmaMGA', 'sofZmanShmaGRA', 'sofZmanTfillaMGA', 'sofZmanTfillaGRA',
         'chatzot', 'minchaGedola', 'minchaKetana',
-        'plagHaMincha', 'sunset', 'tzeit'
+        'plagHaMincha'
     ];
     
-    return keys.map(key => ({
+    // Add Shabbat times if they exist (Friday/Saturday)
+    if (zmanim.candleLighting) {
+        keys.push('candleLighting');
+    }
+    
+    keys.push('sunset', 'tzeit');
+    
+    if (zmanim.havdalah) {
+        keys.push('havdalah');
+    }
+    
+    return keys.filter(key => zmanim[key]).map(key => ({
         key,
         ...zmanim[key]
     }));

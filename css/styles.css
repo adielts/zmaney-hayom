@@ -389,6 +389,14 @@ body {
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
+.next-zman-time {
+  font-size: var(--font-size-md);
+  opacity: 0.85;
+  direction: ltr;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gold-light);
+}
+
 /* ============================================
    Time Card Styles
    ============================================ */
@@ -485,7 +493,18 @@ body {
 }
 
 .time-card.shabbat {
-  background: linear-gradient(135deg, #e6f0ff 0%, #fff 100%);
+  background: linear-gradient(135deg, #e6f3ff 0%, #f0f7ff 100%);
+  border: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.time-card.candle-lighting {
+  background: linear-gradient(135deg, #fff5e6 0%, #fff9f0 100%);
+  border: 2px solid rgba(212, 168, 87, 0.4);
+}
+
+.time-card.havdalah {
+  background: linear-gradient(135deg, #f3e8ff 0%, #faf5ff 100%);
+  border: 2px solid rgba(139, 92, 246, 0.3);
 }
 
 /* צאת הכוכבים - Night time styling */
