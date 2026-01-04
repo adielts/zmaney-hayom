@@ -24,9 +24,9 @@ import {
 // DEBUG MODE - For testing Shabbat times
 // ============================================
 // Uncomment one of these to test:
-// const DEBUG_DATE = new Date('2025-01-10T12:00:00'); // Friday - shows both Candle Lighting & Havdalah
+const DEBUG_DATE = new Date('2025-01-10T12:00:00'); // Friday - shows both Candle Lighting & Havdalah
 // const DEBUG_DATE = new Date('2025-01-11T12:00:00'); // Saturday - shows Havdalah only
-const DEBUG_DATE = null; // Normal mode - use current date
+// const DEBUG_DATE = null; // Normal mode - use current date
 
 // Helper to get current date (respects DEBUG_DATE)
 function getCurrentDate() {
