@@ -49,7 +49,7 @@ export async function searchLocations(query) {
             const displayName = parts.join(', ');
             
             return {
-                name: city || suburb || result.display_name.split(',')[0],
+                name: suburb || city || result.display_name.split(',')[0],
                 displayName: displayName || result.display_name,
                 latitude: parseFloat(result.lat),
                 longitude: parseFloat(result.lon),
