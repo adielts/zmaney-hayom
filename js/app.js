@@ -6,6 +6,19 @@
 import { fetchZmanim, getZmanimList } from './api.js';
 import { getLocationData, getLocationDataWithFallback, clearLocationCache } from './location.js';
 import { initSettingsPanel, applyFilters, isZmanVisible } from './settings.js';
+import { 
+    searchLocations, 
+    getTimezoneFromCoords,
+    getFavorites,
+    getRecent,
+    saveFavorite,
+    removeFavorite,
+    saveRecent,
+    saveCurrentLocation,
+    getCurrentSavedLocation,
+    getLocationMode,
+    setLocationMode
+} from './geocoding.js';
 
 // DOM Elements
 const elements = {
@@ -20,7 +33,18 @@ const elements = {
     zmanimContainer: document.getElementById('zmanim-container'),
     nextZman: document.getElementById('next-zman'),
     nextZmanName: document.getElementById('next-zman-name'),
-    nextZmanCountdown: document.getElementById('next-zman-countdown')
+    nextZmanCountdown: document.getElementById('next-zman-countdown'),
+    
+    // Location Modal elements
+    locationModal: document.getElementById('location-modal'),
+    locationOverlay: document.getElementById('location-overlay'),
+    locationClose: document.getElementById('location-close'),
+    locationSearchInput: document.getElementById('location-search-input'),
+    searchClear: document.getElementById('search-clear'),
+    searchResults: document.getElementById('search-results'),
+    useCurrentLocation: document.getElementById('use-current-location'),
+    favoritesList: document.getElementById('favorites-list'),
+    recentList: document.getElementById('recent-list')
 };
 
 // App State
@@ -39,6 +63,9 @@ async function init() {
     
     // Initialize settings panel
     initSettingsPanel();
+    
+    // Initialize location picker
+    initLocationPicker();
     
     // Listen for filter changes
     window.addEventListener('zmanimFiltered', () => {
@@ -344,6 +371,213 @@ function hideError() {
 
 function showZmanim() {
     elements.zmanimContainer.style.display = 'grid';
+}
+
+// Location Picker Functions
+function initLocationPicker() {
+    // Open location modal when clicking location name
+    elements.locationName.addEventListener('click', openLocationModal);
+    
+    // Close modal
+    elements.locationClose.addEventListener('click', closeLocationModal);
+    elements.locationOverlay.addEventListener('click', closeLocationModal);
+    
+    // Search input
+    let searchTimeout;
+    elements.locationSearchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        
+        // Show/hide clear button
+        elements.searchClear.style.display = query ? 'block' : 'none';
+        
+        // Debounce search
+        clearTimeout(searchTimeout);
+        if (query.length >= 2) {
+            searchTimeout = setTimeout(() => performSearch(query), 300);
+        } else {
+            elements.searchResults.style.display = 'none';
+        }
+    });
+    
+    // Clear search
+    elements.searchClear.addEventListener('click', () => {
+        elements.locationSearchInput.value = '';
+        elements.searchClear.style.display = 'none';
+        elements.searchResults.style.display = 'none';
+    });
+    
+    // Use current location
+    elements.useCurrentLocation.addEventListener('click', async () => {
+        closeLocationModal();
+        setLocationMode('auto');
+        clearLocationCache();
+        await loadZmanim(false);
+    });
+}
+
+function openLocationModal() {
+    elements.locationModal.classList.add('active');
+    elements.locationOverlay.classList.add('active');
+    renderFavorites();
+    renderRecent();
+    elements.locationSearchInput.focus();
+}
+
+function closeLocationModal() {
+    elements.locationModal.classList.remove('active');
+    elements.locationOverlay.classList.remove('active');
+    elements.locationSearchInput.value = '';
+    elements.searchClear.style.display = 'none';
+    elements.searchResults.style.display = 'none';
+}
+
+async function performSearch(query) {
+    elements.searchResults.innerHTML = '<div class="search-loading">🔍 מחפש...</div>';
+    elements.searchResults.style.display = 'block';
+    
+    const results = await searchLocations(query);
+    
+    if (results.length === 0) {
+        elements.searchResults.innerHTML = '<div class="search-no-results">לא נמצאו תוצאות</div>';
+        return;
+    }
+    
+    elements.searchResults.innerHTML = results.map(location => `
+        <div class="search-result-item" data-location='${JSON.stringify(location)}'>
+            <span class="search-result-name">${location.name}</span>
+            <span class="search-result-details">${location.displayName}</span>
+        </div>
+    `).join('');
+    
+    // Add click handlers
+    elements.searchResults.querySelectorAll('.search-result-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const location = JSON.parse(item.dataset.location);
+            selectLocation(location);
+        });
+    });
+}
+
+async function selectLocation(location) {
+    // Add timezone if not present
+    if (!location.timezone) {
+        location.timezone = getTimezoneFromCoords(location.latitude, location.longitude);
+    }
+    
+    // Save to recent
+    saveRecent(location);
+    saveCurrentLocation(location);
+    setLocationMode('manual');
+    
+    // Close modal
+    closeLocationModal();
+    
+    // Update location display
+    elements.locationName.textContent = location.name;
+    elements.locationName.style.color = '';
+    elements.locationName.title = '';
+    
+    // Fetch new zmanim
+    showLoading();
+    try {
+        const zmanim = await fetchZmanim(
+            location.latitude,
+            location.longitude,
+            location.timezone
+        );
+        
+        currentZmanim = zmanim;
+        displayZmanim(zmanim);
+        updateNextZman();
+        hideLoading();
+        showZmanim();
+    } catch (error) {
+        hideLoading();
+        showError(error.message);
+    }
+}
+
+function renderFavorites() {
+    const favorites = getFavorites();
+    
+    if (favorites.length === 0) {
+        elements.favoritesList.innerHTML = '<p class="location-empty">אין מיקומים שמורים</p>';
+        return;
+    }
+    
+    elements.favoritesList.innerHTML = favorites.map(loc => `
+        <div class="location-item">
+            <span class="location-item-icon">⭐</span>
+            <div class="location-item-info">
+                <span class="location-item-name">${loc.name}</span>
+                <span class="location-item-details">${loc.displayName || loc.country}</span>
+            </div>
+            <div class="location-item-actions">
+                <button class="location-item-btn delete" data-lat="${loc.latitude}" data-lng="${loc.longitude}" title="הסר">🗑️</button>
+            </div>
+        </div>
+    `).join('');
+    
+    // Add click handlers
+    elements.favoritesList.querySelectorAll('.location-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            if (e.target.classList.contains('location-item-btn')) return;
+            const loc = favorites.find(f => f.name === item.querySelector('.location-item-name').textContent);
+            selectLocation(loc);
+        });
+    });
+    
+    // Delete handlers
+    elements.favoritesList.querySelectorAll('.delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeFavorite(parseFloat(btn.dataset.lat), parseFloat(btn.dataset.lng));
+            renderFavorites();
+        });
+    });
+}
+
+function renderRecent() {
+    const recent = getRecent();
+    
+    if (recent.length === 0) {
+        elements.recentList.innerHTML = '<p class="location-empty">אין חיפושים אחרונים</p>';
+        return;
+    }
+    
+    elements.recentList.innerHTML = recent.map(loc => `
+        <div class="location-item">
+            <span class="location-item-icon">🕐</span>
+            <div class="location-item-info">
+                <span class="location-item-name">${loc.name}</span>
+                <span class="location-item-details">${loc.displayName || loc.country}</span>
+            </div>
+            <div class="location-item-actions">
+                <button class="location-item-btn favorite" data-location='${JSON.stringify(loc)}' title="הוסף למועדפים">⭐</button>
+            </div>
+        </div>
+    `).join('');
+    
+    // Add click handlers
+    elements.recentList.querySelectorAll('.location-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            if (e.target.classList.contains('location-item-btn')) return;
+            const loc = recent.find(f => f.name === item.querySelector('.location-item-name').textContent);
+            selectLocation(loc);
+        });
+    });
+    
+    // Favorite handlers
+    elements.recentList.querySelectorAll('.favorite').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const loc = JSON.parse(btn.dataset.location);
+            saveFavorite(loc);
+            renderFavorites();
+            btn.textContent = '✅';
+            setTimeout(() => btn.textContent = '⭐', 1000);
+        });
+    });
 }
 
 // Register Service Worker for PWA

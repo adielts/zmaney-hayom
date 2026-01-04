@@ -113,6 +113,66 @@
                 </div>
             </div>
         </div>
+
+        <!-- Location Picker Modal -->
+        <div class="modal-overlay" id="location-overlay"></div>
+        <div class="modal location-modal" id="location-modal">
+            <div class="modal-handle"></div>
+            <div class="modal-header">
+                <h2 class="modal-title">בחר מיקום</h2>
+                <button class="modal-close" id="location-close" aria-label="סגור">✕</button>
+            </div>
+            <div class="modal-content">
+                
+                <!-- Search Box -->
+                <div class="location-search">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input 
+                            type="text" 
+                            id="location-search-input" 
+                            class="search-input"
+                            placeholder="חפש עיר או מיקום..."
+                            autocomplete="off"
+                        >
+                        <button class="search-clear" id="search-clear" style="display: none;">✕</button>
+                    </div>
+                    <div class="search-results" id="search-results" style="display: none;"></div>
+                </div>
+
+                <!-- Current Location Button -->
+                <button class="location-option location-current" id="use-current-location">
+                    <span class="location-option-icon">📍</span>
+                    <div class="location-option-text">
+                        <span class="location-option-name">השתמש במיקום הנוכחי</span>
+                        <span class="location-option-sub">זיהוי אוטומטי באמצעות GPS</span>
+                    </div>
+                    <span class="location-option-arrow">←</span>
+                </button>
+
+                <!-- Favorites Section -->
+                <div class="location-section" id="favorites-section">
+                    <div class="location-section-header">
+                        <h3 class="location-section-title">⭐ מיקומים שמורים</h3>
+                    </div>
+                    <div class="location-list" id="favorites-list">
+                        <p class="location-empty">אין מיקומים שמורים</p>
+                    </div>
+                </div>
+
+                <!-- Recent Searches Section -->
+                <div class="location-section" id="recent-section">
+                    <div class="location-section-header">
+                        <h3 class="location-section-title">🕐 חיפושים אחרונים</h3>
+                    </div>
+                    <div class="location-list" id="recent-list">
+                        <p class="location-empty">אין חיפושים אחרונים</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
     <!-- Scripts -->
