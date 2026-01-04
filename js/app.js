@@ -20,6 +20,20 @@ import {
     setLocationMode
 } from './geocoding.js';
 
+// ============================================
+// DEBUG MODE - For testing Shabbat times
+// ============================================
+// Uncomment one of these to test:
+// const DEBUG_DATE = new Date('2025-01-10T12:00:00'); // Friday - shows both Candle Lighting & Havdalah
+// const DEBUG_DATE = new Date('2025-01-11T12:00:00'); // Saturday - shows Havdalah only
+const DEBUG_DATE = null; // Normal mode - use current date
+
+// Helper to get current date (respects DEBUG_DATE)
+function getCurrentDate() {
+    return DEBUG_DATE || new Date();
+}
+// ============================================
+
 // DOM Elements
 const elements = {
     locationName: document.getElementById('location-name'),
@@ -150,7 +164,7 @@ function toHebrewNumber(num) {
  * Display Hebrew and Gregorian dates
  */
 function displayDates() {
-    const now = new Date();
+    const now = getCurrentDate();
     
     // Gregorian date
     const gregorianOptions = { 
@@ -185,6 +199,14 @@ function displayDates() {
         console.error('Error formatting Hebrew date:', e);
         elements.hebrewDate.textContent = '';
     }
+    
+    // Debug indicator
+    if (DEBUG_DATE) {
+        elements.hebrewDate.textContent += ' 🔧 DEBUG MODE';
+        elements.hebrewDate.style.color = 'var(--color-warning)';
+    } else {
+        elements.hebrewDate.style.color = '';
+    }
 }
 
 /**
@@ -208,11 +230,12 @@ async function loadZmanim(useCache = false) {
             elements.locationName.title = '';
         }
         
-        // Fetch zmanim
+        // Fetch zmanim (pass debug date if available)
         const zmanim = await fetchZmanim(
             location.latitude,
             location.longitude,
-            location.timezone
+            location.timezone,
+            DEBUG_DATE
         );
         
         currentZmanim = zmanim;
@@ -301,7 +324,7 @@ function updateNextZman() {
     if (!currentZmanim) return;
     
     const zmanimList = getZmanimList(currentZmanim);
-    const now = new Date();
+    const now = getCurrentDate();
     
     // Find next zman that is visible
     const nextZman = zmanimList.find(zman => {

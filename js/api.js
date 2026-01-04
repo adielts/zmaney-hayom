@@ -111,6 +111,7 @@ function calculateAlotOhrHachaim(sunriseTime, latitude) {
  * @param {number} latitude - Geographic latitude
  * @param {number} longitude - Geographic longitude
  * @param {string} timezone - IANA timezone identifier (e.g., 'Asia/Jerusalem')
+ * @param {Date} debugDate - Optional date for testing (default: current date)
  * @returns {Promise<Object>} Object containing formatted zmanim times
  * @throws {Error} If the API request fails or returns invalid data
  * 
@@ -118,7 +119,7 @@ function calculateAlotOhrHachaim(sunriseTime, latitude) {
  * const zmanim = await fetchZmanim(31.7683, 35.2137, 'Asia/Jerusalem');
  * console.log(zmanim.sunrise); // "06:45"
  */
-async function fetchZmanim(latitude, longitude, timezone) {
+async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
     // Validate parameters
     if (typeof latitude !== 'number' || typeof longitude !== 'number') {
         throw new Error('Latitude and longitude must be numbers');
@@ -128,12 +129,21 @@ async function fetchZmanim(latitude, longitude, timezone) {
         throw new Error('Timezone must be a valid string');
     }
     
+    const targetDate = debugDate || new Date();
+    
+    // Format date as YYYY-MM-DD
+    const year = targetDate.getFullYear();
+    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const day = String(targetDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    
     // Build API URL
     const url = new URL(HEBCAL_API_BASE);
     url.searchParams.set('cfg', 'json');
     url.searchParams.set('latitude', latitude.toString());
     url.searchParams.set('longitude', longitude.toString());
     url.searchParams.set('tzid', timezone);
+    url.searchParams.set('date', dateStr);
     
     try {
         const response = await fetch(url.toString());
@@ -154,6 +164,9 @@ async function fetchZmanim(latitude, longitude, timezone) {
         // Calculate אור החיים specific times
         const tzeitOhrHachaim = calculateTzeitOhrHachaim(times.sunset, latitude);
         const alotOhrHachaim = calculateAlotOhrHachaim(times.sunrise, latitude);
+        
+        // Get day of week (0 = Sunday, 5 = Friday, 6 = Saturday)
+        const dayOfWeek = targetDate.getDay();
         
         // Extract and format the main zmanim times according to לוח אור החיים
         const zmanim = {
@@ -240,22 +253,41 @@ async function fetchZmanim(latitude, longitude, timezone) {
                 formatted: formatTime(tzeitOhrHachaim),
                 hebrew: 'צאת הכוכבים',
                 english: 'Nightfall'
-            },
-            // הדלקת נרות - Candle Lighting (18 minutes before sunset on Friday)
-            candleLighting: times.candleLighting ? {
-                time: times.candleLighting,
-                formatted: formatTime(times.candleLighting),
-                hebrew: 'הדלקת נרות',
-                english: 'Candle Lighting'
-            } : null,
-            // הבדלה - Havdalah (after tzeit on Saturday)
-            havdalah: times.havdalah ? {
-                time: times.havdalah,
-                formatted: formatTime(times.havdalah),
+            }
+        };
+        
+        // Add Shabbat times based on day of week
+        if (dayOfWeek === 5) {
+            // Friday - show both Candle Lighting and estimated Havdalah
+            if (times.sunset) {
+                const candleTime = new Date(times.sunset);
+                candleTime.setMinutes(candleTime.getMinutes() - 18);
+                zmanim.candleLighting = {
+                    time: candleTime.toISOString(),
+                    formatted: formatTime(candleTime.toISOString()),
+                    hebrew: 'הדלקת נרות',
+                    english: 'Candle Lighting'
+                };
+            }
+            
+            // Havdalah - estimated for Saturday evening
+            const estimatedHavdalah = new Date(tzeitOhrHachaim);
+            estimatedHavdalah.setDate(estimatedHavdalah.getDate() + 1);
+            zmanim.havdalah = {
+                time: estimatedHavdalah.toISOString(),
+                formatted: formatTime(estimatedHavdalah.toISOString()),
                 hebrew: 'הבדלה',
                 english: 'Havdalah'
-            } : null
-        };
+            };
+        } else if (dayOfWeek === 6) {
+            // Saturday - show only Havdalah
+            zmanim.havdalah = {
+                time: tzeitOhrHachaim,
+                formatted: formatTime(tzeitOhrHachaim),
+                hebrew: 'הבדלה',
+                english: 'Havdalah'
+            };
+        }
         
         // Add metadata
         zmanim.meta = {
@@ -286,26 +318,28 @@ async function fetchZmanim(latitude, longitude, timezone) {
  */
 function getZmanimList(zmanim) {
     const keys = [
-        'dawn', 'sunrise', 'sofZmanShmaMGA', 'sofZmanShmaGRA', 'sofZmanTfillaMGA', 'sofZmanTfillaGRA',
-        'chatzot', 'minchaGedola', 'minchaKetana',
-        'plagHaMincha'
+        'dawn', 
+        'sunrise', 
+        'sofZmanShmaMGA', 
+        'sofZmanShmaGRA', 
+        'sofZmanTfillaMGA', 
+        'sofZmanTfillaGRA',
+        'chatzot', 
+        'minchaGedola', 
+        'minchaKetana',
+        'plagHaMincha',
+        'candleLighting',  // Friday evening
+        'sunset', 
+        'tzeit',
+        'havdalah'         // Saturday evening
     ];
     
-    // Add Shabbat times if they exist (Friday/Saturday)
-    if (zmanim.candleLighting) {
-        keys.push('candleLighting');
-    }
-    
-    keys.push('sunset', 'tzeit');
-    
-    if (zmanim.havdalah) {
-        keys.push('havdalah');
-    }
-    
-    return keys.filter(key => zmanim[key]).map(key => ({
-        key,
-        ...zmanim[key]
-    }));
+    return keys
+        .filter(key => zmanim[key]) // Only include times that exist
+        .map(key => ({
+            key,
+            ...zmanim[key]
+        }));
 }
 
 // Export functions for use in other modules
