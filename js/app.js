@@ -306,7 +306,7 @@ function getZmanIcon(key) {
         sofZmanShmaMGA: '📖',
         sofZmanTfillaGRA: '🙏',
         candleLighting: '🕯️',
-        havdalah: '🍷',
+        havdalah: '✨',
         havdalahRT: '✨',
         sofZmanTfillaMGA: '🙏',
         chatzot: '🕛',
