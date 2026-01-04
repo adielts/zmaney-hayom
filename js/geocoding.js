@@ -35,14 +35,28 @@ export async function searchLocations(query) {
 
         const results = await response.json();
 
-        return results.map(result => ({
-            name: result.display_name.split(',')[0],
-            displayName: result.display_name,
-            latitude: parseFloat(result.lat),
-            longitude: parseFloat(result.lon),
-            country: result.address?.country || '',
-            countryCode: result.address?.country_code?.toUpperCase() || ''
-        }));
+        return results.map(result => {
+            const address = result.address || {};
+            const suburb = address.suburb || address.neighbourhood || '';
+            const city = address.city || address.town || address.village || '';
+            const country = address.country || '';
+            
+            // Build display name: suburb (if exists), city, country
+            const parts = [];
+            if (suburb) parts.push(suburb);
+            if (city) parts.push(city);
+            if (country) parts.push(country);
+            const displayName = parts.join(', ');
+            
+            return {
+                name: city || suburb || result.display_name.split(',')[0],
+                displayName: displayName || result.display_name,
+                latitude: parseFloat(result.lat),
+                longitude: parseFloat(result.lon),
+                country: country,
+                countryCode: address.country_code?.toUpperCase() || ''
+            };
+        });
 
     } catch (error) {
         console.error('Location search error:', error);
