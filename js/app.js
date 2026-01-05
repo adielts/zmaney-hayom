@@ -269,7 +269,7 @@ function displayZmanim(zmanim) {
         
         // Determine special styling
         let cardClass = 'time-card';
-        if (isPassed) cardClass += ' passed';
+        if (isPassed) cardClass += ' time-card-passed';
         if (isNext) cardClass += ' active';
         if (zman.key === 'sunrise') cardClass += ' sunrise';
         if (zman.key === 'sunset') cardClass += ' sunset';
