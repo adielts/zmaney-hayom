@@ -1,23 +1,23 @@
 /**
  * Zmanim API Service
  * Fetches Jewish prayer times from the Hebcal API
- * Calculations according to לוח אור החיים
+ * Calculations according to לוח אור החיים using seasonal minutes (דקות זמניות)
  */
 
 const HEBCAL_API_BASE = 'https://www.hebcal.com/zmanim';
 
 /**
- * Formats an ISO time string to HH:MM format
- * @param {string} isoString - ISO 8601 date-time string
+ * Formats a Date object or ISO time string to HH:MM format
+ * @param {Date|string} time - Date object or ISO 8601 date-time string
  * @returns {string} Formatted time string in HH:MM format, or '--:--' if invalid
  */
-function formatTime(isoString) {
-    if (!isoString) {
+function formatTime(time) {
+    if (!time) {
         return '--:--';
     }
     
     try {
-        const date = new Date(isoString);
+        const date = time instanceof Date ? time : new Date(time);
         if (isNaN(date.getTime())) {
             return '--:--';
         }
@@ -32,151 +32,222 @@ function formatTime(isoString) {
 }
 
 /**
- * Calculate צאת הכוכבים according to אור החיים
- * Adjusted for Hebcal API base times
- * @param {string} sunsetTime - ISO timestamp of sunset
- * @param {number} latitude - Location latitude
- * @returns {string} ISO timestamp for tzeit
+ * Calculate the length of a "seasonal minute" (דקה זמנית)
+ * Based on the day length from sunrise to sunset
+ * Day is divided into 12 seasonal hours = 720 seasonal minutes
+ * @param {Date} sunrise - Sunrise time
+ * @param {Date} sunset - Sunset time
+ * @returns {number} Length of one seasonal minute in milliseconds
  */
-function calculateTzeitOhrHachaim(sunsetTime, latitude) {
-    const sunset = new Date(sunsetTime);
-    const month = sunset.getMonth();
-    
-    // אור החיים times adjusted for Hebcal API:
-    // Winter (Dec-Jan): 16 minutes (API sunset + 16 = אור החיים tzeit)
-    // Late Winter (Nov, Feb): ~17-18 minutes
-    // Spring/Fall: ~20-22 minutes  
-    // Summer (May-Aug): ~26-28 minutes
-    
-    let minutesAfterSunset;
-    
-    if (month === 0 || month === 11) {
-        // December-January
-        minutesAfterSunset = 16;
-    } else if (month === 1 || month === 10) {
-        // November, February
-        minutesAfterSunset = 18;
-    } else if (month >= 4 && month <= 7) {
-        // Summer (May-Aug)
-        minutesAfterSunset = 27;
-    } else {
-        // Spring/Fall (Mar-Apr, Sep-Oct)
-        minutesAfterSunset = 21;
-    }
-    
-    // Adjust for latitude (higher latitude = longer twilight)
-    const latitudeAdjustment = Math.abs(latitude - 31.78) * 0.3; // Base: Jerusalem
-    minutesAfterSunset += latitudeAdjustment;
-    
-    const tzeit = new Date(sunset.getTime() + minutesAfterSunset * 60 * 1000);
-    return tzeit.toISOString();
+function getSeasonalMinute(sunrise, sunset) {
+    const dayLengthMs = sunset.getTime() - sunrise.getTime();
+    return dayLengthMs / 720;
 }
 
 /**
- * Calculate צאת השבת according to אור החיים
- * Adjusted for Hebcal API base times
- * @param {string} sunsetTime - ISO timestamp of sunset
- * @param {number} latitude - Location latitude
- * @returns {string} ISO timestamp for tzeitShabbat
+ * Calculate עלות השחר (Dawn) - אור החיים method
+ * 72 seasonal minutes before sunrise = day length ÷ 10 before sunrise
+ * @param {Date} sunrise - Sunrise time
+ * @param {Date} sunset - Sunset time
+ * @returns {Date} Dawn time
  */
-function calculateTzeitShabbat(sunsetTime, latitude) {
-    const sunset = new Date(sunsetTime);
-    const month = sunset.getMonth();
-    
-    // אור החיים times for צאת השבת adjusted for Hebcal API:
-    // Winter (Dec-Jan): 34 minutes (API sunset + 34 = אור החיים tzeitShabbat)
-    // November, February: ~32 minutes
-    // Spring/Fall: ~30 minutes
-    // Summer: ~36-38 minutes
-    
-    let minutesAfterSunset;
-    
-    if (month === 0 || month === 11) {
-        // December-January
-        minutesAfterSunset = 34;
-    } else if (month === 1 || month === 10) {
-        // November, February
-        minutesAfterSunset = 32;
-    } else if (month >= 4 && month <= 7) {
-        // Summer (May-Aug)
-        minutesAfterSunset = 37;
-    } else {
-        // Spring/Fall (Mar-Apr, Sep-Oct)
-        minutesAfterSunset = 30;
-    }
-    
-    // Adjust for latitude (higher latitude = longer twilight)
-    const latitudeAdjustment = Math.abs(latitude - 31.78) * 0.3; // Base: Jerusalem
-    minutesAfterSunset += latitudeAdjustment;
-    
-    const tzeitShabbat = new Date(sunset.getTime() + minutesAfterSunset * 60 * 1000);
-    return tzeitShabbat.toISOString();
+function calculateAlotHashachar(sunrise, sunset) {
+    const dayLengthMs = sunset.getTime() - sunrise.getTime();
+    // 72 seasonal minutes = 1/10 of day length
+    const alotOffset = dayLengthMs / 10;
+    return new Date(sunrise.getTime() - alotOffset);
 }
 
 /**
- * Calculate עלות השחר according to אור החיים
- * Adjusted for Hebcal API base times
- * @param {string} sunriseTime - ISO timestamp of sunrise
- * @param {number} latitude - Location latitude
- * @returns {string} ISO timestamp for alot
+ * Calculate זמן טלית ותפילין - אור החיים method
+ * 6 seasonal minutes after עלות השחר (כדעת הפרי מגדים)
+ * @param {Date} alot - Dawn time
+ * @param {Date} sunrise - Sunrise time
+ * @param {Date} sunset - Sunset time
+ * @returns {Date} Earliest time for Tallit and Tefillin
  */
-function calculateAlotOhrHachaim(sunriseTime, latitude) {
-    const sunrise = new Date(sunriseTime);
-    const month = sunrise.getMonth();
-    
-    // אור החיים times for עלות השחר adjusted for Hebcal API:
-    // Winter (Dec-Jan): 68 minutes (API sunrise - 68 = אור החיים alot)
-    // November, February: ~70 minutes
-    // Spring/Fall: ~78-80 minutes
-    // Summer: ~88-90 minutes
-    
-    let minutesBeforeSunrise;
-    
-    if (month === 0 || month === 11) {
-        // December-January
-        minutesBeforeSunrise = 68;
-    } else if (month === 1 || month === 10) {
-        // November, February
-        minutesBeforeSunrise = 70;
-    } else if (month >= 4 && month <= 7) {
-        // Summer (May-Aug)
-        minutesBeforeSunrise = 89;
-    } else {
-        // Spring/Fall (Mar-Apr, Sep-Oct)
-        minutesBeforeSunrise = 79;
-    }
-    
-    // Adjust for latitude
-    const latitudeAdjustment = Math.abs(latitude - 31.78) * 0.5;
-    minutesBeforeSunrise += latitudeAdjustment;
-    
-    const alot = new Date(sunrise.getTime() - minutesBeforeSunrise * 60 * 1000);
-    return alot.toISOString();
+function calculateTallitTefillin(alot, sunrise, sunset) {
+    const seasonalMinute = getSeasonalMinute(sunrise, sunset);
+    return new Date(alot.getTime() + (6 * seasonalMinute));
 }
 
 /**
- * Fetches Zmanim (Jewish prayer times) from the Hebcal API
- * @param {number} latitude - Geographic latitude
- * @param {number} longitude - Geographic longitude
- * @param {string} timezone - IANA timezone identifier (e.g., 'Asia/Jerusalem')
+ * Calculate סוף זמן קריאת שמע - מגן אברהם
+ * 3 seasonal hours from עלות השחר to צאת הכוכבים ר"ת
+ * @param {Date} alot - Dawn time
+ * @param {Date} tzeitRT - Rabbeinu Tam nightfall
+ * @returns {Date} Latest time for Shema (MGA)
+ */
+function calculateSofZmanShmaMGA(alot, tzeitRT) {
+    const dayLengthMs = tzeitRT.getTime() - alot.getTime();
+    const seasonalHour = dayLengthMs / 12;
+    return new Date(alot.getTime() + (3 * seasonalHour));
+}
+
+/**
+ * Calculate סוף זמן קריאת שמע - גר"א
+ * 3 seasonal hours from sunrise to sunset
+ * @param {Date} sunrise - Sunrise time
+ * @param {Date} sunset - Sunset time
+ * @returns {Date} Latest time for Shema (GRA)
+ */
+function calculateSofZmanShmaGRA(sunrise, sunset) {
+    const dayLengthMs = sunset.getTime() - sunrise.getTime();
+    const seasonalHour = dayLengthMs / 12;
+    return new Date(sunrise.getTime() + (3 * seasonalHour));
+}
+
+/**
+ * Calculate סוף זמן תפילה - מגן אברהם
+ * 4 seasonal hours from עלות השחר to צאת הכוכבים ר"ת
+ * @param {Date} alot - Dawn time
+ * @param {Date} tzeitRT - Rabbeinu Tam nightfall
+ * @returns {Date} Latest time for Tefilla (MGA)
+ */
+function calculateSofZmanTfillaMGA(alot, tzeitRT) {
+    const dayLengthMs = tzeitRT.getTime() - alot.getTime();
+    const seasonalHour = dayLengthMs / 12;
+    return new Date(alot.getTime() + (4 * seasonalHour));
+}
+
+/**
+ * Calculate סוף זמן תפילה - גר"א
+ * 4 seasonal hours from sunrise to sunset
+ * @param {Date} sunrise - Sunrise time
+ * @param {Date} sunset - Sunset time
+ * @returns {Date} Latest time for Tefilla (GRA)
+ */
+function calculateSofZmanTfillaGRA(sunrise, sunset) {
+    const dayLengthMs = sunset.getTime() - sunrise.getTime();
+    const seasonalHour = dayLengthMs / 12;
+    return new Date(sunrise.getTime() + (4 * seasonalHour));
+}
+
+/**
+ * Calculate חצות היום (Midday) - אור החיים method
+ * Midpoint between sunrise and sunset
+ * @param {Date} sunrise - Sunrise time
+ * @param {Date} sunset - Sunset time
+ * @returns {Date} Midday time
+ */
+function calculateChatzot(sunrise, sunset) {
+    const midpoint = (sunrise.getTime() + sunset.getTime()) / 2;
+    return new Date(midpoint);
+}
+
+/**
+ * Calculate מנחה גדולה - אור החיים method
+ * Half hour (regular or seasonal, whichever is later) after chatzot
+ * @param {Date} chatzot - Midday time
+ * @param {Date} sunrise - Sunrise time
+ * @param {Date} sunset - Sunset time
+ * @returns {Date} Earliest Mincha time
+ */
+function calculateMinchaGedola(chatzot, sunrise, sunset) {
+    const seasonalMinute = getSeasonalMinute(sunrise, sunset);
+    const seasonalHalfHour = 30 * seasonalMinute;
+    const regularHalfHour = 30 * 60 * 1000; // 30 minutes in ms
+    
+    // Use the later of the two (לחומרא)
+    const offset = Math.max(seasonalHalfHour, regularHalfHour);
+    return new Date(chatzot.getTime() + offset);
+}
+
+/**
+ * Calculate מנחה קטנה - אור החיים method
+ * 9.5 seasonal hours from sunrise
+ * @param {Date} sunrise - Sunrise time
+ * @param {Date} sunset - Sunset time
+ * @returns {Date} Mincha Ketana time
+ */
+function calculateMinchaKetana(sunrise, sunset) {
+    const dayLengthMs = sunset.getTime() - sunrise.getTime();
+    const seasonalHour = dayLengthMs / 12;
+    return new Date(sunrise.getTime() + (9.5 * seasonalHour));
+}
+
+/**
+ * Calculate פלג המנחה - אור החיים method
+ * 10.75 seasonal hours from sunrise (1.25 hours before sunset)
+ * @param {Date} sunrise - Sunrise time
+ * @param {Date} sunset - Sunset time
+ * @returns {Date} Plag HaMincha time
+ */
+function calculatePlagHaMincha(sunrise, sunset) {
+    const dayLengthMs = sunset.getTime() - sunrise.getTime();
+    const seasonalHour = dayLengthMs / 12;
+    return new Date(sunrise.getTime() + (10.75 * seasonalHour));
+}
+
+/**
+ * Calculate צאת הכוכבים - אור החיים method
+ * 13.5 seasonal minutes after sunset (3/4 מיל)
+ * @param {Date} sunrise - Sunrise time
+ * @param {Date} sunset - Sunset time
+ * @returns {Date} Nightfall time
+ */
+function calculateTzeitHakochavim(sunrise, sunset) {
+    const seasonalMinute = getSeasonalMinute(sunrise, sunset);
+    return new Date(sunset.getTime() + (13.5 * seasonalMinute));
+}
+
+/**
+ * Calculate צאת שבת ר"ת (Rabbeinu Tam) - אור החיים method
+ * 72 seasonal minutes after sunset = day length ÷ 10 after sunset
+ * @param {Date} sunrise - Sunrise time
+ * @param {Date} sunset - Sunset time
+ * @returns {Date} Rabbeinu Tam nightfall time
+ */
+function calculateTzeitRT(sunrise, sunset) {
+    const dayLengthMs = sunset.getTime() - sunrise.getTime();
+    // 72 seasonal minutes = 1/10 of day length
+    const rtOffset = dayLengthMs / 10;
+    return new Date(sunset.getTime() + rtOffset);
+}
+
+/**
+ * Calculate הדלקת נרות - אור החיים method
+ * 20 minutes before sunset (40 minutes in Jerusalem for מחמירים)
+ * @param {Date} sunset - Sunset time
+ * @param {boolean} isJerusalem - Is location in Jerusalem area
+ * @returns {Date} Candle lighting time
+ */
+function calculateCandleLighting(sunset, isJerusalem = false) {
+    const minutes = isJerusalem ? 40 : 20;
+    return new Date(sunset.getTime() - (minutes * 60 * 1000));
+}
+
+/**
+ * Calculate צאת השבת - אור החיים method
+ * 30 minutes after sunset
+ * @param {Date} sunset - Sunset time
+ * @returns {Date} Shabbat end time
+ */
+function calculateTzeitShabbat(sunset) {
+    return new Date(sunset.getTime() + (30 * 60 * 1000));
+}
+
+/**
+ * Check if location is in Jerusalem area
+ * @param {number} latitude
+ * @param {number} longitude
+ * @returns {boolean}
+ */
+function isJerusalemArea(latitude, longitude) {
+    // Jerusalem approximate bounds
+    return latitude >= 31.7 && latitude <= 31.85 && 
+           longitude >= 35.1 && longitude <= 35.25;
+}
+
+/**
+ * Fetch zmanim from Hebcal API and calculate according to אור החיים
+ * @param {number} latitude - Location latitude
+ * @param {number} longitude - Location longitude  
+ * @param {string} timezone - IANA timezone identifier
  * @param {Date} debugDate - Optional date for testing (default: current date)
- * @returns {Promise<Object>} Object containing formatted zmanim times
- * @throws {Error} If the API request fails or returns invalid data
- * 
- * @example
- * const zmanim = await fetchZmanim(31.7683, 35.2137, 'Asia/Jerusalem');
- * console.log(zmanim.sunrise); // "06:45"
+ * @returns {Promise<Object>} Zmanim data object
  */
 async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
-    // Validate parameters
-    if (typeof latitude !== 'number' || typeof longitude !== 'number') {
-        throw new Error('Latitude and longitude must be numbers');
-    }
-    
-    if (!timezone || typeof timezone !== 'string') {
-        throw new Error('Timezone must be a valid string');
-    }
-    
     const targetDate = debugDate || new Date();
     
     // Format date as YYYY-MM-DD
@@ -185,11 +256,10 @@ async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
     const day = String(targetDate.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
     
-    // Build API URL
     const url = new URL(HEBCAL_API_BASE);
     url.searchParams.set('cfg', 'json');
-    url.searchParams.set('latitude', latitude.toString());
-    url.searchParams.set('longitude', longitude.toString());
+    url.searchParams.set('latitude', latitude);
+    url.searchParams.set('longitude', longitude);
     url.searchParams.set('tzid', timezone);
     url.searchParams.set('date', dateStr);
     
@@ -197,199 +267,192 @@ async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
         const response = await fetch(url.toString());
         
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            throw new Error(`Hebcal API error: ${response.status}`);
         }
         
         const data = await response.json();
-        
-        // Validate response structure
-        if (!data || !data.times) {
-            throw new Error('Invalid API response: missing times data');
-        }
-        
         const times = data.times;
         
-        // Calculate אור החיים specific times
-        const tzeitOhrHachaim = calculateTzeitOhrHachaim(times.sunset, latitude);
-        const alotOhrHachaim = calculateAlotOhrHachaim(times.sunrise, latitude);
+        // Parse base times from API
+        const sunrise = new Date(times.sunrise);
+        const sunset = new Date(times.sunset);
+        
+        // Check if Jerusalem area for candle lighting
+        const inJerusalem = isJerusalemArea(latitude, longitude);
+        
+        // Calculate צאת ר"ת first (needed for MGA calculations)
+        const tzeitRT = calculateTzeitRT(sunrise, sunset);
+        
+        // Calculate עלות השחר (needed for MGA calculations)
+        const alot = calculateAlotHashachar(sunrise, sunset);
+        
+        // Calculate all times according to אור החיים methodology
+        const tallitTefillin = calculateTallitTefillin(alot, sunrise, sunset);
+        const sofZmanShmaMGA = calculateSofZmanShmaMGA(alot, tzeitRT);
+        const sofZmanShmaGRA = calculateSofZmanShmaGRA(sunrise, sunset);
+        const sofZmanTfillaMGA = calculateSofZmanTfillaMGA(alot, tzeitRT);
+        const sofZmanTfillaGRA = calculateSofZmanTfillaGRA(sunrise, sunset);
+        const chatzot = calculateChatzot(sunrise, sunset);
+        const minchaGedola = calculateMinchaGedola(chatzot, sunrise, sunset);
+        const minchaKetana = calculateMinchaKetana(sunrise, sunset);
+        const plagHaMincha = calculatePlagHaMincha(sunrise, sunset);
+        const tzeit = calculateTzeitHakochavim(sunrise, sunset);
         
         // Get day of week (0 = Sunday, 5 = Friday, 6 = Saturday)
         const dayOfWeek = targetDate.getDay();
         
-        // Extract and format the main zmanim times according to לוח אור החיים
+        // Build zmanim object
         const zmanim = {
-            // עלות השחר - Dawn (אור החיים - 16.1° below horizon)
             dawn: {
-                time: alotOhrHachaim,
-                formatted: formatTime(alotOhrHachaim),
+                time: alot.toISOString(),
+                formatted: formatTime(alot),
                 hebrew: 'עלות השחר',
                 english: 'Dawn'
             },
-            // הנץ החמה - Sunrise
+            tallitTefillin: {
+                time: tallitTefillin.toISOString(),
+                formatted: formatTime(tallitTefillin),
+                hebrew: 'זמן טלית ותפילין',
+                english: 'Tallit & Tefillin'
+            },
             sunrise: {
-                time: times.sunrise,
-                formatted: formatTime(times.sunrise),
+                time: sunrise.toISOString(),
+                formatted: formatTime(sunrise),
                 hebrew: 'הנץ החמה',
                 english: 'Sunrise'
             },
-            // סוף זמן ק"ש - Latest Shema (GR"A - used by אור החיים)
-            sofZmanShmaGRA: {
-                time: times.sofZmanShma,
-                formatted: formatTime(times.sofZmanShma),
-                hebrew: 'סוף זמן ק"ש גר"א',
-                english: 'Latest Shema GRA'
-            },
-            // סוף זמן ק"ש - Latest Shema (MG"A)
             sofZmanShmaMGA: {
-                time: times.sofZmanShmaMGA,
-                formatted: formatTime(times.sofZmanShmaMGA),
-                hebrew: 'סוף זמן ק"ש מגן אברהם',
-                english: 'Latest Shema MGA'
+                time: sofZmanShmaMGA.toISOString(),
+                formatted: formatTime(sofZmanShmaMGA),
+                hebrew: 'סוף זמן ק"ש מג"א',
+                english: 'Latest Shema (MGA)'
             },
-            // סוף זמן תפילה - Latest Shacharit (GR"A - used by אור החיים)
-            sofZmanTfillaGRA: {
-                time: times.sofZmanTfilla,
-                formatted: formatTime(times.sofZmanTfilla),
-                hebrew: 'סוף זמן תפילה גר"א',
-                english: 'Latest Shacharit GRA'
+            sofZmanShmaGRA: {
+                time: sofZmanShmaGRA.toISOString(),
+                formatted: formatTime(sofZmanShmaGRA),
+                hebrew: 'סוף זמן ק"ש גר"א',
+                english: 'Latest Shema (GRA)'
             },
-            // סוף זמן תפילה - Latest Shacharit (MG"A)
             sofZmanTfillaMGA: {
-                time: times.sofZmanTfillaMGA,
-                formatted: formatTime(times.sofZmanTfillaMGA),
-                hebrew: 'סוף זמן תפילה מגן אברהם',
-                english: 'Latest Shacharit MGA'
+                time: sofZmanTfillaMGA.toISOString(),
+                formatted: formatTime(sofZmanTfillaMGA),
+                hebrew: 'סוף זמן תפילה מג"א',
+                english: 'Latest Tefilla (MGA)'
             },
-            // חצות היום - Midday
+            sofZmanTfillaGRA: {
+                time: sofZmanTfillaGRA.toISOString(),
+                formatted: formatTime(sofZmanTfillaGRA),
+                hebrew: 'סוף זמן תפילה גר"א',
+                english: 'Latest Tefilla (GRA)'
+            },
             chatzot: {
-                time: times.chatzot,
-                formatted: formatTime(times.chatzot),
+                time: chatzot.toISOString(),
+                formatted: formatTime(chatzot),
                 hebrew: 'חצות היום',
                 english: 'Midday'
             },
-            // מנחה גדולה - Earliest Mincha
             minchaGedola: {
-                time: times.minchaGedola,
-                formatted: formatTime(times.minchaGedola),
+                time: minchaGedola.toISOString(),
+                formatted: formatTime(minchaGedola),
                 hebrew: 'מנחה גדולה',
                 english: 'Earliest Mincha'
             },
-            // מנחה קטנה - Mincha Ketana
             minchaKetana: {
-                time: times.minchaKetana,
-                formatted: formatTime(times.minchaKetana),
+                time: minchaKetana.toISOString(),
+                formatted: formatTime(minchaKetana),
                 hebrew: 'מנחה קטנה',
                 english: 'Mincha Ketana'
             },
-            // פלג המנחה - Plag HaMincha
             plagHaMincha: {
-                time: times.plagHaMincha,
-                formatted: formatTime(times.plagHaMincha),
+                time: plagHaMincha.toISOString(),
+                formatted: formatTime(plagHaMincha),
                 hebrew: 'פלג המנחה',
                 english: 'Plag HaMincha'
             },
-            // שקיעה - Sunset
             sunset: {
-                time: times.sunset,
-                formatted: formatTime(times.sunset),
+                time: sunset.toISOString(),
+                formatted: formatTime(sunset),
                 hebrew: 'שקיעה',
                 english: 'Sunset'
             },
-            // צאת הכוכבים - Nightfall (אור החיים - 8.5° below horizon)
             tzeit: {
-                time: tzeitOhrHachaim,
-                formatted: formatTime(tzeitOhrHachaim),
+                time: tzeit.toISOString(),
+                formatted: formatTime(tzeit),
                 hebrew: 'צאת הכוכבים',
                 english: 'Nightfall'
             }
         };
         
-        // Add Shabbat times based on day of week
+        // Add Shabbat times if Friday or Saturday
         if (dayOfWeek === 5) {
-            // Friday - show both Candle Lighting and צאת השבת
-            if (times.sunset) {
-                // הדלקת נרות - 18 minutes before API sunset (adjusted for אור החיים)
-                const candleTime = new Date(times.sunset);
-                candleTime.setMinutes(candleTime.getMinutes() - 18);
-                zmanim.candleLighting = {
-                    time: candleTime.toISOString(),
-                    formatted: formatTime(candleTime.toISOString()),
-                    hebrew: 'הדלקת נרות',
-                    english: 'Candle Lighting'
-                };
-            }
+            // Friday - show candle lighting and צאת שבת for tomorrow
+            const candleLighting = calculateCandleLighting(sunset, inJerusalem);
+            zmanim.candleLighting = {
+                time: candleLighting.toISOString(),
+                formatted: formatTime(candleLighting),
+                hebrew: inJerusalem ? 'הדלקת נרות (40 דק\')' : 'הדלקת נרות',
+                english: 'Candle Lighting'
+            };
             
-            // צאת השבת - calculated for Saturday evening using Saturday's sunset
-            // For now, estimate Saturday sunset as ~1 minute later than Friday
-            const saturdaySunset = new Date(times.sunset);
+            // Estimate Saturday's sunset (approximately same time)
+            const saturdaySunset = new Date(sunset);
             saturdaySunset.setDate(saturdaySunset.getDate() + 1);
-            saturdaySunset.setMinutes(saturdaySunset.getMinutes() + 1);
-            const tzeitShabbat = calculateTzeitShabbat(saturdaySunset.toISOString(), latitude);
+            
+            const tzeitShabbat = calculateTzeitShabbat(saturdaySunset);
             zmanim.havdalah = {
-                time: tzeitShabbat,
+                time: tzeitShabbat.toISOString(),
                 formatted: formatTime(tzeitShabbat),
                 hebrew: 'צאת השבת',
                 english: 'Shabbat Ends'
             };
             
-            // צאת שבת ר"ת - Rabbeinu Tam (68 minutes after API sunset = אור החיים 18:02)
-            const tzeitShabbatRT = new Date(saturdaySunset.getTime() + 68 * 60 * 1000);
+            // Calculate Saturday's ר"ת
+            const saturdaySunrise = new Date(sunrise);
+            saturdaySunrise.setDate(saturdaySunrise.getDate() + 1);
+            const saturdayTzeitRT = calculateTzeitRT(saturdaySunrise, saturdaySunset);
             zmanim.havdalahRT = {
-                time: tzeitShabbatRT.toISOString(),
-                formatted: formatTime(tzeitShabbatRT.toISOString()),
+                time: saturdayTzeitRT.toISOString(),
+                formatted: formatTime(saturdayTzeitRT),
                 hebrew: 'צאת שבת ר"ת',
-                english: 'Shabbat Ends RT'
-            };
-        } else if (dayOfWeek === 6) {
-            // Saturday - show צאת השבת and צאת שבת ר"ת
-            const tzeitShabbat = calculateTzeitShabbat(times.sunset, latitude);
-            zmanim.havdalah = {
-                time: tzeitShabbat,
-                formatted: formatTime(tzeitShabbat),
-                hebrew: 'צאת השבת',
-                english: 'Shabbat Ends'
-            };
-            
-            // צאת שבת ר"ת - Rabbeinu Tam (68 minutes after API sunset = אור החיים)
-            const tzeitShabbatRT = new Date(new Date(times.sunset).getTime() + 68 * 60 * 1000);
-            zmanim.havdalahRT = {
-                time: tzeitShabbatRT.toISOString(),
-                formatted: formatTime(tzeitShabbatRT.toISOString()),
-                hebrew: 'צאת שבת ר"ת',
-                english: 'Shabbat Ends RT'
+                english: 'Shabbat Ends (RT)'
             };
         }
         
-        // Add metadata
-        zmanim.meta = {
-            date: data.date || new Date().toISOString().split('T')[0],
-            location: {
-                latitude,
-                longitude,
-                timezone
-            },
-            fetchedAt: new Date().toISOString()
-        };
+        // Saturday - show צאת שבת
+        if (dayOfWeek === 6) {
+            const tzeitShabbat = calculateTzeitShabbat(sunset);
+            zmanim.havdalah = {
+                time: tzeitShabbat.toISOString(),
+                formatted: formatTime(tzeitShabbat),
+                hebrew: 'צאת השבת',
+                english: 'Shabbat Ends'
+            };
+            
+            zmanim.havdalahRT = {
+                time: tzeitRT.toISOString(),
+                formatted: formatTime(tzeitRT),
+                hebrew: 'צאת שבת ר"ת',
+                english: 'Shabbat Ends (RT)'
+            };
+        }
         
         return zmanim;
         
     } catch (error) {
-        // Re-throw with more context if it's a network error
-        if (error.name === 'TypeError' && error.message.includes('fetch')) {
-            throw new Error('Network error: Unable to connect to Hebcal API');
-        }
-        throw error;
+        console.error('Hebcal API fetch error:', error);
+        throw new Error('שגיאה בטעינת זמני התפילה. אנא נסה שוב.');
     }
 }
 
 /**
- * Gets a simple array of zmanim for display purposes
- * @param {Object} zmanim - Zmanim object returned from fetchZmanim
- * @returns {Array<Object>} Array of zmanim with time, hebrew, and english properties
+ * Get ordered list of zmanim for display
+ * @param {Object} zmanim - Zmanim object from fetchZmanim
+ * @returns {Array} Array of zman objects with key property
  */
 function getZmanimList(zmanim) {
     const keys = [
-        'dawn', 
+        'dawn',
+        'tallitTefillin',
         'sunrise', 
         'sofZmanShmaMGA', 
         'sofZmanShmaGRA', 
@@ -399,15 +462,15 @@ function getZmanimList(zmanim) {
         'minchaGedola', 
         'minchaKetana',
         'plagHaMincha',
-        'candleLighting',  // Friday evening
+        'candleLighting',
         'sunset', 
         'tzeit',
-        'havdalah',        // צאת השבת
-        'havdalahRT'       // צאת שבת ר"ת
+        'havdalah',
+        'havdalahRT'
     ];
     
     return keys
-        .filter(key => zmanim[key]) // Only include times that exist
+        .filter(key => zmanim[key])
         .map(key => ({
             key,
             ...zmanim[key]

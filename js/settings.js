@@ -9,6 +9,7 @@ const STORAGE_KEY = 'zmaneyHayom_settings';
 const DEFAULT_SETTINGS = {
     visibleZmanim: {
         dawn: true,
+        tallitTefillin: true,
         sunrise: true,
         sofZmanShmaMGA: true,
         sofZmanShmaGRA: true,
@@ -29,6 +30,7 @@ const DEFAULT_SETTINGS = {
 // Zmanim metadata for settings panel
 const ZMANIM_METADATA = [
     { key: 'dawn', hebrew: 'עלות השחר', english: 'Dawn', icon: '🌅' },
+    { key: 'tallitTefillin', hebrew: 'זמן טלית ותפילין', english: 'Tallit & Tefillin', icon: '🧣' },
     { key: 'sunrise', hebrew: 'הנץ החמה', english: 'Sunrise', icon: '☀️' },
     { key: 'sofZmanShmaMGA', hebrew: 'סוף זמן ק"ש מג"א', english: 'Latest Shema (MGA)', icon: '📖' },
     { key: 'sofZmanShmaGRA', hebrew: 'סוף זמן ק"ש גר"א', english: 'Latest Shema (GRA)', icon: '📖' },

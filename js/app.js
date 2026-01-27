@@ -302,6 +302,7 @@ function displayZmanim(zmanim) {
 function getZmanIcon(key) {
     const icons = {
         dawn: '🌅',
+        tallitTefillin: '🧣',
         sunrise: '☀️',
         sofZmanShmaGRA: '📖',
         sofZmanShmaMGA: '📖',
