@@ -303,6 +303,7 @@ body {
   align-items: center;
   gap: var(--space-xs);
   position: relative;
+  padding: 0 50px; /* Space for icons on both sides */
 }
 
 .hebrew-date {
@@ -355,22 +356,36 @@ body {
 }
 
 .today-btn {
-  margin-top: var(--space-sm);
-  padding: var(--space-xs) var(--space-md);
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: var(--space-xs) var(--space-sm);
   background: var(--color-accent);
   color: white;
   border: none;
   border-radius: var(--radius-lg);
   font-family: var(--font-family-hebrew);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(212, 168, 87, 0.4);
+  animation: pulse-glow 2s ease-in-out infinite;
 }
 
 .today-btn:hover {
   background: var(--color-accent-dark);
-  transform: scale(1.02);
+  transform: translateY(-50%) scale(1.05);
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(212, 168, 87, 0.4);
+  }
+  50% {
+    box-shadow: 0 2px 16px rgba(212, 168, 87, 0.7);
+  }
 }
 
 .date-section.custom-date {

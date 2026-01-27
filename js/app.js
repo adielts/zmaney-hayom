@@ -182,8 +182,10 @@ function initDatePicker() {
     elements.dateInput.addEventListener('change', async (e) => {
         const selectedDateStr = e.target.value;
         if (selectedDateStr) {
-            // Parse the selected date (set time to noon to avoid timezone issues)
-            selectedDate = new Date(selectedDateStr + 'T12:00:00');
+            // Parse the selected date with current time
+            const now = new Date();
+            const [year, month, day] = selectedDateStr.split('-').map(Number);
+            selectedDate = new Date(year, month - 1, day, now.getHours(), now.getMinutes(), now.getSeconds());
             
             // Check if it's today
             const today = new Date();
