@@ -90,14 +90,15 @@ async function init() {
     // Display current date
     displayDates();
     
-    // Load zmanim - don't use cache on initial load to request location permission
-    await loadZmanim(false);
+    // Load zmanim - USE cache on initial load to avoid repeated permission requests
+    // Fresh location only requested when user explicitly clicks refresh
+    await loadZmanim(true);
     
     // Update countdown every second
     startCountdown();
     
-    // Refresh zmanim every hour
-    setInterval(() => loadZmanim(false), 60 * 60 * 1000);
+    // Refresh zmanim every hour (use cache for location)
+    setInterval(() => loadZmanim(true), 60 * 60 * 1000);
 }
 
 /**
