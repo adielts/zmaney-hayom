@@ -49,8 +49,17 @@
 
             <!-- Date Section -->
             <section class="date-section">
-                <div id="hebrew-date" class="hebrew-date">טוען תאריך...</div>
-                <div id="gregorian-date" class="gregorian-date"></div>
+                <div class="date-picker-container">
+                    <div id="hebrew-date" class="hebrew-date">טוען תאריך...</div>
+                    <div id="gregorian-date" class="gregorian-date"></div>
+                    <button id="date-picker-btn" class="date-picker-btn" aria-label="בחר תאריך">
+                        📅
+                    </button>
+                    <input type="date" id="date-input" class="date-input-hidden">
+                </div>
+                <button id="today-btn" class="today-btn" style="display: none;">
+                    חזור להיום
+                </button>
             </section>
 
             <!-- Next Zman Countdown -->

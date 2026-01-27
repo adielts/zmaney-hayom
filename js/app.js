@@ -21,16 +21,14 @@ import {
 } from './geocoding.js';
 
 // ============================================
-// DEBUG MODE - For testing Shabbat times
+// DATE SELECTION
 // ============================================
-// Uncomment one of these to test:
-// const DEBUG_DATE = new Date('2025-01-10T12:00:00'); // Friday - shows both Candle Lighting & Havdalah
-// const DEBUG_DATE = new Date('2025-01-11T12:00:00'); // Saturday - shows Havdalah only
-const DEBUG_DATE = null; // Normal mode - use current date
+// Selected date - null means today
+let selectedDate = null;
 
-// Helper to get current date (respects DEBUG_DATE)
+// Helper to get current date (respects selected date)
 function getCurrentDate() {
-    return DEBUG_DATE || new Date();
+    return selectedDate || new Date();
 }
 // ============================================
 
@@ -40,6 +38,10 @@ const elements = {
     refreshBtn: document.getElementById('refresh-btn'),
     hebrewDate: document.getElementById('hebrew-date'),
     gregorianDate: document.getElementById('gregorian-date'),
+    datePickerBtn: document.getElementById('date-picker-btn'),
+    dateInput: document.getElementById('date-input'),
+    todayBtn: document.getElementById('today-btn'),
+    dateSection: document.querySelector('.date-section'),
     loading: document.getElementById('loading'),
     error: document.getElementById('error'),
     errorMessage: document.getElementById('error-message'),
@@ -75,6 +77,9 @@ async function init() {
     // Set up event listeners
     elements.refreshBtn.addEventListener('click', handleRefresh);
     elements.retryBtn.addEventListener('click', handleRetry);
+    
+    // Initialize date picker
+    initDatePicker();
     
     // Initialize settings panel
     initSettingsPanel();
@@ -162,6 +167,72 @@ function toHebrewNumber(num) {
 }
 
 /**
+ * Initialize date picker functionality
+ */
+function initDatePicker() {
+    // Set default date input to today
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    elements.dateInput.value = todayStr;
+    
+    // Open native date picker when button clicked
+    elements.datePickerBtn.addEventListener('click', () => {
+        elements.dateInput.showPicker();
+    });
+    
+    // Handle date selection
+    elements.dateInput.addEventListener('change', async (e) => {
+        const selectedDateStr = e.target.value;
+        if (selectedDateStr) {
+            // Parse the selected date (set time to noon to avoid timezone issues)
+            selectedDate = new Date(selectedDateStr + 'T12:00:00');
+            
+            // Check if it's today
+            const today = new Date();
+            const isToday = selectedDate.toDateString() === today.toDateString();
+            
+            if (isToday) {
+                selectedDate = null; // Use real-time for today
+            }
+            
+            // Update UI
+            updateDateUI();
+            displayDates();
+            
+            // Reload zmanim with new date
+            await loadZmanim(true);
+        }
+    });
+    
+    // Handle "Today" button
+    elements.todayBtn.addEventListener('click', async () => {
+        selectedDate = null;
+        elements.dateInput.value = new Date().toISOString().split('T')[0];
+        
+        updateDateUI();
+        displayDates();
+        await loadZmanim(true);
+    });
+}
+
+/**
+ * Update date UI based on selected date
+ */
+function updateDateUI() {
+    const isCustomDate = selectedDate !== null;
+    
+    // Show/hide "Today" button
+    elements.todayBtn.style.display = isCustomDate ? 'block' : 'none';
+    
+    // Add visual indicator for custom date
+    if (isCustomDate) {
+        elements.dateSection.classList.add('custom-date');
+    } else {
+        elements.dateSection.classList.remove('custom-date');
+    }
+}
+
+/**
  * Display Hebrew and Gregorian dates
  */
 function displayDates() {
@@ -201,10 +272,9 @@ function displayDates() {
         elements.hebrewDate.textContent = '';
     }
     
-    // Debug indicator
-    if (DEBUG_DATE) {
-        elements.hebrewDate.textContent += ' 🔧 DEBUG MODE';
-        elements.hebrewDate.style.color = 'var(--color-warning)';
+    // Custom date indicator
+    if (selectedDate) {
+        elements.hebrewDate.style.color = 'var(--color-accent)';
     } else {
         elements.hebrewDate.style.color = '';
     }
@@ -231,12 +301,12 @@ async function loadZmanim(useCache = false) {
             elements.locationName.title = '';
         }
         
-        // Fetch zmanim (pass debug date if available)
+        // Fetch zmanim (pass selected date if available)
         const zmanim = await fetchZmanim(
             location.latitude,
             location.longitude,
             location.timezone,
-            DEBUG_DATE
+            selectedDate
         );
         
         currentZmanim = zmanim;
