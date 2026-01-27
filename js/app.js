@@ -175,10 +175,8 @@ function initDatePicker() {
     const todayStr = today.toISOString().split('T')[0];
     elements.dateInput.value = todayStr;
     
-    // Open native date picker when button clicked
-    elements.datePickerBtn.addEventListener('click', () => {
-        elements.dateInput.showPicker();
-    });
+    // On iOS, clicking the invisible input directly works better than showPicker()
+    // The input is positioned over the button, so clicking the button area triggers the input
     
     // Handle date selection
     elements.dateInput.addEventListener('change', async (e) => {

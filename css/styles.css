@@ -341,10 +341,17 @@ body {
 
 .date-input-hidden {
   position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
   opacity: 0;
-  width: 0;
-  height: 0;
-  pointer-events: none;
+  cursor: pointer;
+  z-index: 10;
+  /* Make clickable on iOS */
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .today-btn {
