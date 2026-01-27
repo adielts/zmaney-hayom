@@ -240,6 +240,48 @@ function isJerusalemArea(latitude, longitude) {
 }
 
 /**
+ * Get sunrise/sunset adjustments for אור החיים methodology
+ * אור החיים uses:
+ * - הנץ הנראה (visible sunrise) from לוח בכורי יוסף
+ * - שקיעה from the highest point in the city
+ * 
+ * @param {number} latitude
+ * @param {number} longitude
+ * @returns {Object} Adjustments in minutes
+ */
+function getOhrHachaimAdjustments(latitude, longitude) {
+    // Jerusalem area - largest adjustments
+    if (latitude >= 31.7 && latitude <= 31.85 && longitude >= 35.1 && longitude <= 35.25) {
+        return {
+            sunriseAdjust: -1.5,  // API sunrise is ~1.5 min later than אור החיים
+            sunsetAdjust: 4       // API sunset is ~4 min earlier than אור החיים
+        };
+    }
+    
+    // Tel Aviv area
+    if (latitude >= 32.0 && latitude <= 32.15 && longitude >= 34.7 && longitude <= 34.85) {
+        return {
+            sunriseAdjust: -2,
+            sunsetAdjust: 3
+        };
+    }
+    
+    // Haifa area
+    if (latitude >= 32.75 && latitude <= 32.85 && longitude >= 34.95 && longitude <= 35.05) {
+        return {
+            sunriseAdjust: -1.5,
+            sunsetAdjust: 3
+        };
+    }
+    
+    // Default - no adjustment
+    return {
+        sunriseAdjust: 0,
+        sunsetAdjust: 0
+    };
+}
+
+/**
  * Fetch zmanim from Hebcal API and calculate according to אור החיים
  * @param {number} latitude - Location latitude
  * @param {number} longitude - Location longitude  
@@ -273,9 +315,16 @@ async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
         const data = await response.json();
         const times = data.times;
         
-        // Parse base times from API
-        const sunrise = new Date(times.sunrise);
-        const sunset = new Date(times.sunset);
+        // Get אור החיים adjustments for this location
+        const adjustments = getOhrHachaimAdjustments(latitude, longitude);
+        
+        // Parse base times from API and apply adjustments
+        let sunrise = new Date(times.sunrise);
+        let sunset = new Date(times.sunset);
+        
+        // Adjust sunrise and sunset according to אור החיים methodology
+        sunrise = new Date(sunrise.getTime() + (adjustments.sunriseAdjust * 60 * 1000));
+        sunset = new Date(sunset.getTime() + (adjustments.sunsetAdjust * 60 * 1000));
         
         // Check if Jerusalem area for candle lighting
         const inJerusalem = isJerusalemArea(latitude, longitude);
