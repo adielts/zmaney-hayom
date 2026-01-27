@@ -357,7 +357,7 @@ body {
 
 .today-btn {
   position: absolute;
-  right: -30px;
+  right: -26px;
   top: 50%;
   transform: translateY(-50%);
   padding: var(--space-xs) var(--space-sm);
