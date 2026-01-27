@@ -357,7 +357,7 @@ body {
 
 .today-btn {
   position: absolute;
-  right: 0;
+  right: -10px;
   top: 50%;
   transform: translateY(-50%);
   padding: var(--space-xs) var(--space-sm);
@@ -372,6 +372,7 @@ body {
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(212, 168, 87, 0.4);
   animation: pulse-glow 2s ease-in-out infinite;
+  white-space: nowrap;
 }
 
 .today-btn:hover {
