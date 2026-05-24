@@ -168,15 +168,19 @@ function calculateMinchaKetana(sunrise, sunset) {
 
 /**
  * Calculate פלג המנחה - אור החיים method
- * 10.75 seasonal hours from sunrise (1.25 hours before sunset)
+ * 1.25 seasonal hours before צאת הכוכבים
  * @param {Date} sunrise - Sunrise time
  * @param {Date} sunset - Sunset time
  * @returns {Date} Plag HaMincha time
  */
 function calculatePlagHaMincha(sunrise, sunset) {
     const dayLengthMs = sunset.getTime() - sunrise.getTime();
+    const seasonalMinute = dayLengthMs / 720;
     const seasonalHour = dayLengthMs / 12;
-    return new Date(sunrise.getTime() + (10.75 * seasonalHour));
+    // צאת הכוכבים = sunset + 13.5 seasonal minutes
+    const tzeit = new Date(sunset.getTime() + (13.5 * seasonalMinute));
+    // פלג המנחה = 1.25 seasonal hours before צאת הכוכבים
+    return new Date(tzeit.getTime() - (1.25 * seasonalHour));
 }
 
 /**
