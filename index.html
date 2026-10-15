@@ -37,7 +37,7 @@
         <!-- Main Content -->
         <main class="main-content">
             <!-- Location Section -->
-            <section class="location-section">
+            <section class="location-section panel">
                 <div class="location-info">
                     <span class="location-icon">📍</span>
                     <span id="location-name" class="location-name">מאתר מיקום...</span>
@@ -48,7 +48,7 @@
             </section>
 
             <!-- Date Section -->
-            <section class="date-section">
+            <section class="date-section panel">
                 <div class="date-picker-container">
                     <button id="date-picker-btn" class="date-picker-btn" aria-label="בחר תאריך">
                         📅
@@ -63,7 +63,7 @@
             </section>
 
             <!-- Next Zman Countdown -->
-            <section id="next-zman" class="next-zman-section" style="display: none; margin-bottom: 2rem;">
+            <section id="next-zman" class="next-zman-section panel" style="display: none; margin-bottom: 2rem;">
                 <div class="next-zman-label">הזמן הבא:</div>
                 <div class="next-zman-info">
                     <span id="next-zman-name" class="next-zman-name"></span>
@@ -85,14 +85,38 @@
                 <button id="retry-btn" class="btn btn-secondary">נסה שוב</button>
             </div>
 
+            <!-- Zmanim Toolbar - view switcher -->
+            <div id="zmanim-toolbar" class="zmanim-toolbar hidden">
+                <span class="section-eyebrow">זמני היום</span>
+                <div class="view-toggle" id="view-toggle" role="group" aria-label="סוג תצוגה">
+                    <button type="button" class="view-toggle-btn active" data-view="grid" aria-pressed="true" title="תצוגת כרטיסים">
+                        <svg class="view-toggle-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                            <rect x="2" y="2" width="7" height="7" rx="2"></rect>
+                            <rect x="11" y="2" width="7" height="7" rx="2"></rect>
+                            <rect x="2" y="11" width="7" height="7" rx="2"></rect>
+                            <rect x="11" y="11" width="7" height="7" rx="2"></rect>
+                        </svg>
+                        <span class="view-toggle-text">כרטיסים</span>
+                    </button>
+                    <button type="button" class="view-toggle-btn" data-view="list" aria-pressed="false" title="תצוגת רשימה">
+                        <svg class="view-toggle-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                            <rect x="2" y="3" width="16" height="3" rx="1.5"></rect>
+                            <rect x="2" y="8.5" width="16" height="3" rx="1.5"></rect>
+                            <rect x="2" y="14" width="16" height="3" rx="1.5"></rect>
+                        </svg>
+                        <span class="view-toggle-text">רשימה</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Zmanim Grid -->
-            <section id="zmanim-container" class="zmanim-grid" style="display: none;">
+            <section id="zmanim-container" class="zmanim-grid view-grid hidden">
                 <!-- Cards will be injected here by JavaScript -->
             </section>
 
             <!-- Shabbat Times Section -->
             <section id="shabbat-section" class="shabbat-section" aria-label="זמני שבת">
-                <div class="shabbat-card">
+                <div class="shabbat-card panel">
                     <div class="shabbat-ornament shabbat-ornament-top">✦ ✧ ✦</div>
                     <div class="shabbat-header">
                         <span class="shabbat-eyebrow">זמני השבת הקרובה</span>
@@ -182,7 +206,7 @@
                 </button>
 
                 <!-- Favorites Section -->
-                <div class="location-section" id="favorites-section">
+                <div class="location-group" id="favorites-section">
                     <div class="location-section-header">
                         <h3 class="location-section-title">⭐ מיקומים שמורים</h3>
                     </div>
@@ -192,7 +216,7 @@
                 </div>
 
                 <!-- Recent Searches Section -->
-                <div class="location-section" id="recent-section">
+                <div class="location-group" id="recent-section">
                     <div class="location-section-header">
                         <h3 class="location-section-title">🕐 חיפושים אחרונים</h3>
                     </div>

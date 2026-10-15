@@ -569,6 +569,8 @@ async function buildShabbatTimes(latitude, longitude, timezone, dates) {
         toZman('havdalahRT', havdalahRT, 'צאת שבת ר"ת', 'Shabbat Ends (RT)', '72 דק׳ זמניות')
     );
     
+    times.sort((a, b) => new Date(a.time) - new Date(b.time));
+    
     return {
         parasha: info.title,
         parashaEnglish: info.titleEnglish,
@@ -610,7 +612,7 @@ async function fetchShabbatTimes(latitude, longitude, timezone, baseDate = null)
 }
 
 /**
- * Get ordered list of zmanim for display
+ * Get list of zmanim for display, sorted chronologically (earliest first)
  * @param {Object} zmanim - Zmanim object from fetchZmanim
  * @returns {Array} Array of zman objects with key property
  */
@@ -636,7 +638,8 @@ function getZmanimList(zmanim) {
         .map(key => ({
             key,
             ...zmanim[key]
-        }));
+        }))
+        .sort((a, b) => new Date(a.time) - new Date(b.time));
 }
 
 // Export functions for use in other modules

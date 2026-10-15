@@ -4,7 +4,66 @@
  */
 
 const STORAGE_KEY = 'zmanim_last_location';
+const PERMISSION_KEY = 'zmanim_location_permission_asked';
 const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+/**
+ * Checks whether the browser permission prompt was already shown once
+ * @returns {boolean} True if the user was already asked for location access
+ */
+function hasAskedForPermission() {
+    try {
+        return localStorage.getItem(PERMISSION_KEY) === 'true';
+    } catch (error) {
+        return false;
+    }
+}
+
+/**
+ * Remembers that the permission prompt was already shown, so it is never
+ * triggered automatically a second time
+ */
+function markPermissionAsked() {
+    try {
+        localStorage.setItem(PERMISSION_KEY, 'true');
+    } catch (error) {
+        console.warn('Failed to persist location permission state:', error);
+    }
+}
+
+/**
+ * Reads the current geolocation permission state
+ * @returns {Promise<'granted'|'denied'|'prompt'|'unknown'>} Permission state
+ */
+async function getPermissionState() {
+    if (!navigator.permissions?.query) {
+        return 'unknown';
+    }
+    
+    try {
+        const status = await navigator.permissions.query({ name: 'geolocation' });
+        return status.state;
+    } catch (error) {
+        // Permissions API not supported for geolocation (older Safari)
+        return 'unknown';
+    }
+}
+
+/**
+ * Subscribes to geolocation permission changes (e.g. the user grants access
+ * from the browser settings after denying it)
+ * @param {(state: string) => void} callback - Called with the new state
+ */
+async function onPermissionChange(callback) {
+    if (!navigator.permissions?.query) return;
+    
+    try {
+        const status = await navigator.permissions.query({ name: 'geolocation' });
+        status.addEventListener('change', () => callback(status.state));
+    } catch (error) {
+        // Permission monitoring is not available - silently ignore
+    }
+}
 
 /**
  * Gets the current geographic position using browser Geolocation API
@@ -181,10 +240,18 @@ function clearLocationCache() {
 /**
  * Main function to get complete location data
  * Combines geolocation, timezone, and city name
- * @param {boolean} useCache - Whether to use cached data if available (default: true)
+ *
+ * The browser permission prompt is only triggered once: afterwards the app
+ * relies on the granted permission (which never prompts again) or on the
+ * cached location, unless the user explicitly asks for a fresh location.
+ *
+ * @param {Object} [options]
+ * @param {boolean} [options.useCache=true] - Use cached data when still valid
+ * @param {boolean} [options.allowPrompt=false] - Allow showing the permission
+ *        prompt again following an explicit user action
  * @returns {Promise<{latitude: number, longitude: number, timezone: string, cityName: string, fromCache?: boolean}>}
  */
-async function getLocationData(useCache = true) {
+async function getLocationData({ useCache = true, allowPrompt = false } = {}) {
     // Try to get cached data first
     if (useCache) {
         const cachedData = getFromCache();
@@ -194,21 +261,26 @@ async function getLocationData(useCache = true) {
         }
     }
 
-    // Check if we already have permission before requesting
-    // This prevents the annoying permission popup
-    if (navigator.permissions) {
-        try {
-            const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
-            if (permissionStatus.state === 'denied') {
-                console.log('Geolocation permission denied, using cached or default');
-                const cachedData = getFromCache();
-                if (cachedData) return cachedData;
-                throw new Error('Location permission denied');
-            }
-        } catch (e) {
-            // permissions API not supported, continue normally
-        }
+    const permissionState = await getPermissionState();
+
+    // Permission was denied - never prompt again, fall back to a known location
+    if (permissionState === 'denied') {
+        console.log('Geolocation permission denied, using cached or default');
+        const cachedData = getFromCache();
+        if (cachedData) return cachedData;
+        throw new Error('Location permission denied');
     }
+
+    // Permission not granted yet. Only prompt on the very first run, or when
+    // the user explicitly asked for it (refresh / "use current location").
+    if (permissionState !== 'granted' && hasAskedForPermission() && !allowPrompt) {
+        console.log('Location permission already requested before, not asking again');
+        const cachedData = getFromCache();
+        if (cachedData) return cachedData;
+        throw new Error('Location permission not granted');
+    }
+
+    markPermissionAsked();
 
     // Get fresh location data
     const { latitude, longitude } = await getCurrentLocation();
@@ -235,12 +307,12 @@ async function getLocationData(useCache = true) {
 
 /**
  * Gets location data with fallback to default location
- * @param {boolean} useCache - Whether to use cached data if available
+ * @param {Object} [options] - Same options as getLocationData
  * @returns {Promise<Object>} Location data
  */
-async function getLocationDataWithFallback(useCache = true) {
+async function getLocationDataWithFallback(options = {}) {
     try {
-        return await getLocationData(useCache);
+        return await getLocationData(options);
     } catch (error) {
         console.warn('Geolocation failed, checking cache or using default:', error.message);
         
@@ -269,6 +341,9 @@ export {
     getCityName,
     getLocationData,
     getLocationDataWithFallback,
+    getPermissionState,
+    onPermissionChange,
+    hasAskedForPermission,
     saveToCache,
     getFromCache,
     clearLocationCache,

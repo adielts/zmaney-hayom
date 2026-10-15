@@ -16,43 +16,59 @@
   --color-gold: #d4a857;
   --color-gold-light: #e6c47a;
   --color-gold-dark: #b8923e;
+  --color-accent: var(--color-gold);
+  --color-accent-dark: var(--color-gold-dark);
   
   /* Neutral Colors */
   --color-white: #ffffff;
   --color-off-white: #f7f8fa;
-  --color-gray-100: #f1f3f5;
-  --color-gray-200: #e9ecef;
-  --color-gray-300: #dee2e6;
-  --color-gray-400: #ced4da;
-  --color-gray-500: #adb5bd;
-  --color-gray-600: #6c757d;
-  --color-gray-700: #495057;
-  --color-gray-800: #343a40;
-  --color-gray-900: #212529;
+  
+  /* Surface tints - the app uses a single dark "royal navy" theme, so the
+     neutral scale is expressed as translucent light layers over the navy */
+  --color-gray-100: rgba(255, 255, 255, 0.07);
+  --color-gray-200: rgba(255, 255, 255, 0.12);
+  --color-gray-300: rgba(255, 255, 255, 0.2);
+  --color-gray-400: rgba(255, 255, 255, 0.32);
+  --color-gray-500: rgba(255, 255, 255, 0.45);
+  --color-gray-600: rgba(255, 255, 255, 0.6);
+  --color-gray-700: rgba(255, 255, 255, 0.75);
+  --color-gray-800: rgba(255, 255, 255, 0.85);
+  --color-gray-900: #f7fafc;
   
   /* Semantic Colors */
-  --color-success: #28a745;
-  --color-warning: #ffc107;
-  --color-error: #dc3545;
-  --color-info: #17a2b8;
+  --color-success: #4ade80;
+  --color-warning: #f0c14b;
+  --color-error: #f87171;
+  --color-info: #60a5fa;
   
   /* Background Colors */
   --bg-primary: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #1a365d 100%);
-  --bg-card: var(--color-white);
-  --bg-body: var(--color-off-white);
+  --bg-card: #15294a;
+  --bg-body: #0a1527;
+  
+  /* Panel surface - shared "Shabbat card" look used across the whole app */
+  --panel-bg:
+    radial-gradient(circle at 50% 0%, rgba(212, 168, 87, 0.22) 0%, transparent 60%),
+    linear-gradient(160deg, #15294a 0%, #1a365d 45%, #0f2442 100%);
+  --panel-border-color: var(--color-gold);
+  --panel-inner-border: rgba(212, 168, 87, 0.45);
+  --panel-glow: 0 0 0 6px rgba(212, 168, 87, 0.12);
+  --surface-soft: rgba(255, 255, 255, 0.07);
+  --surface-soft-hover: rgba(255, 255, 255, 0.12);
+  --surface-border: rgba(255, 255, 255, 0.1);
   
   /* Text Colors */
-  --text-primary: var(--color-gray-900);
-  --text-secondary: var(--color-gray-600);
+  --text-primary: #edf2f9;
+  --text-secondary: rgba(237, 242, 249, 0.68);
   --text-light: var(--color-white);
   --text-gold: var(--color-gold);
   
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
-  --shadow-gold: 0 4px 15px rgba(212, 168, 87, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.45);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.5);
+  --shadow-gold: 0 4px 18px rgba(212, 168, 87, 0.35);
   
   /* Border Radius */
   --radius-sm: 8px;
@@ -106,36 +122,11 @@
 
 /* ============================================
    Dark Mode Support
+   The app ships a single dark "royal navy & gold" theme, matching the
+   Shabbat card, so no per-scheme overrides are required.
    ============================================ */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-primary: #2c5282;
-    --color-primary-light: #3d7aed;
-    --color-primary-dark: #1a365d;
-    
-    --bg-card: #1e2a3a;
-    --bg-body: #0f1724;
-    
-    --text-primary: #e2e8f0;
-    --text-secondary: #a0aec0;
-    
-    --color-gray-100: #2d3748;
-    --color-gray-200: #4a5568;
-    --color-gray-300: #718096;
-    
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
-  }
-  
-  /* Card titles in dark mode */
-  .time-name {
-    color: #e2e8f0 !important;
-  }
-  
-  .time-value {
-    color: #90cdf4 !important;
-  }
+:root {
+  color-scheme: dark;
 }
 
 /* ============================================
@@ -162,7 +153,10 @@ body {
   font-weight: var(--font-weight-normal);
   line-height: 1.6;
   color: var(--text-primary);
-  background: var(--bg-body);
+  background:
+    radial-gradient(circle at 50% -10%, rgba(212, 168, 87, 0.14) 0%, transparent 55%),
+    var(--bg-body);
+  background-attachment: fixed;
   min-height: 100vh;
   min-height: -webkit-fill-available;
   direction: rtl;
@@ -187,16 +181,59 @@ body {
 }
 
 /* ============================================
+   Panel - shared surface used by every section
+   (same treatment as the Shabbat card: navy gradient,
+   gold frame and a thin inner decorative border)
+   ============================================ */
+.panel {
+  position: relative;
+  color: var(--text-light);
+  background: var(--panel-bg);
+  border: 2px solid var(--panel-border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl), var(--panel-glow);
+  overflow: hidden;
+}
+
+/* Inner decorative frame */
+.panel::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid var(--panel-inner-border);
+  border-radius: var(--radius-md);
+  pointer-events: none;
+}
+
+.panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Small caps label shared by all sections */
+.section-eyebrow,
+.shabbat-eyebrow {
+  display: block;
+  font-size: var(--font-size-xs);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ============================================
    Header Styles
    ============================================ */
 .header {
-  background: var(--color-primary);
+  background: var(--panel-bg);
   color: var(--text-light);
   padding: var(--space-sm) var(--space-md);
   padding-top: calc(var(--space-sm) + var(--safe-area-top));
+  padding-bottom: var(--space-md);
   text-align: center;
   position: relative;
+  border-bottom: 2px solid var(--color-gold);
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--shadow-lg);
 }
 
 .header-content {
@@ -210,6 +247,8 @@ body {
   font-weight: var(--font-weight-semibold);
   margin-bottom: 0;
   letter-spacing: 0.5px;
+  color: var(--color-gold-light);
+  text-shadow: 0 2px 12px rgba(212, 168, 87, 0.35);
 }
 
 .app-title-icon {
@@ -237,16 +276,12 @@ body {
    Location Display Section
    ============================================ */
 .location-section {
-  background: var(--bg-card);
   padding: var(--space-lg);
   margin: var(--space-md);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  border: 2px solid rgba(212, 168, 87, 0.15);
 }
 
 .location-info {
@@ -259,7 +294,6 @@ body {
 
 .location-icon {
   font-size: var(--font-size-xl);
-  color: var(--color-primary);
   flex-shrink: 0;
 }
 
@@ -271,7 +305,7 @@ body {
 .location-name {
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
+  color: var(--color-gold-light);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -290,11 +324,7 @@ body {
 .date-section {
   text-align: center;
   padding: var(--space-lg);
-  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(212, 168, 87, 0.05) 100%);
-  border-radius: var(--radius-xl);
   margin: var(--space-md);
-  box-shadow: var(--shadow-md);
-  border: 2px solid rgba(212, 168, 87, 0.1);
 }
 
 .date-picker-container {
@@ -310,12 +340,12 @@ body {
   font-family: var(--font-family-hebrew);
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
+  color: var(--color-gold-light);
 }
 
 .gregorian-date {
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.75);
   direction: ltr;
   display: inline-block;
 }
@@ -362,7 +392,7 @@ body {
   transform: translateY(-50%);
   padding: var(--space-xs) var(--space-sm);
   background: var(--color-accent);
-  color: white;
+  color: var(--color-primary-dark);
   border: none;
   border-radius: var(--radius-lg);
   font-family: var(--font-family-hebrew);
@@ -378,6 +408,7 @@ body {
 .today-btn:hover {
   background: var(--color-accent-dark);
   transform: translateY(-50%) scale(1.05);
+  color: var(--color-primary-dark);
 }
 
 @keyframes pulse-glow {
@@ -407,6 +438,64 @@ body {
 }
 
 /* ============================================
+   Zmanim Toolbar & View Switcher
+   ============================================ */
+.zmanim-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin: var(--space-lg) var(--space-xs) var(--space-md);
+}
+
+.view-toggle {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  background: var(--surface-soft);
+  border: 1px solid rgba(212, 168, 87, 0.35);
+  border-radius: var(--radius-xl);
+}
+
+.view-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 6px var(--space-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: rgba(255, 255, 255, 0.7);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.view-toggle-btn:hover {
+  color: var(--color-gold-light);
+}
+
+.view-toggle-btn.active {
+  color: var(--color-primary-dark);
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold));
+  box-shadow: var(--shadow-gold);
+}
+
+.view-toggle-btn:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.view-toggle-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* ============================================
    Prayer Times Grid
    ============================================ */
 .times-grid {
@@ -422,10 +511,17 @@ body {
   gap: var(--space-md);
 }
 
+/* List view - compact rows, same look as the Shabbat time rows */
+.zmanim-grid.view-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
 /* Single column for very small screens */
 @media (max-width: 320px) {
   .times-grid,
-  .zmanim-grid {
+  .zmanim-grid.view-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -433,7 +529,7 @@ body {
 /* Three columns for larger screens */
 @media (min-width: 768px) {
   .times-grid,
-  .zmanim-grid {
+  .zmanim-grid.view-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
@@ -442,14 +538,9 @@ body {
    Next Zman Countdown Section
    ============================================ */
 .next-zman-section {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  color: var(--text-light);
-  padding: var(--space-xl);\n  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
   margin-top: var(--space-lg);
   text-align: center;
-  box-shadow: var(--shadow-lg);
-  border: 3px solid rgba(212, 168, 87, 0.3);
-  border-radius: var(--radius-xl);
 }
 
 .next-zman-label {
@@ -493,16 +584,32 @@ body {
    Time Card Styles
    ============================================ */
 .time-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-xl);
+  position: relative;
+  padding: var(--space-lg) var(--space-md);
   text-align: center;
-  box-shadow: var(--shadow-md);
+  color: var(--text-light);
+  background: var(--panel-bg);
+  border: 2px solid var(--panel-border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), 0 0 0 4px rgba(212, 168, 87, 0.1);
+  overflow: hidden;
   transition: transform var(--transition-normal), 
               box-shadow var(--transition-normal);
+}
+
+/* Inner decorative frame, like the Shabbat card */
+.time-card::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(212, 168, 87, 0.35);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+}
+
+.time-card > * {
   position: relative;
-  overflow: hidden;
-  border: 2px solid rgba(212, 168, 87, 0.1);
+  z-index: 1;
 }
 
 .time-card::before {
@@ -515,13 +622,13 @@ body {
   background: linear-gradient(90deg, var(--color-gold), var(--color-gold-light));
   opacity: 0;
   transition: opacity var(--transition-normal);
+  z-index: 2;
 }
 
 .time-card:hover,
 .time-card:focus-within {
   transform: translateY(-4px) scale(1.02);
-  box-shadow: var(--shadow-xl);
-  border-color: rgba(212, 168, 87, 0.3);
+  box-shadow: var(--shadow-xl), var(--panel-glow);
 }
 
 .time-card:hover::before,
@@ -530,73 +637,79 @@ body {
 }
 
 .time-card.active {
-  border: 3px solid var(--color-gold);
-  box-shadow: var(--shadow-gold);
-  transform: scale(1.05);
-  background: linear-gradient(135deg, rgba(212, 168, 87, 0.1) 0%, var(--bg-card) 100%);
+  box-shadow: var(--shadow-gold), 0 0 0 6px rgba(212, 168, 87, 0.18);
+  transform: scale(1.03);
 }
 
+.time-card.active::after {
+  border-color: var(--color-gold);
+}
+
+.time-card-header {
+  margin-bottom: var(--space-sm);
+}
+
+.time-icon,
 .time-card-icon {
   font-size: var(--font-size-2xl);
-  margin-bottom: var(--space-sm);
+  line-height: 1;
   display: block;
 }
 
+.time-name,
 .time-card-name {
   font-family: var(--font-family-hebrew);
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
+  color: var(--text-light);
   margin-bottom: var(--space-xs);
 }
 
 .time-card-name-english {
   font-size: var(--font-size-xs);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.6);
   margin-bottom: var(--space-sm);
   display: block;
 }
 
+.time-value,
 .time-card-value {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
+  color: var(--color-gold-light);
   direction: ltr;
   display: inline-block;
   font-variant-numeric: tabular-nums;
 }
 
 .time-card-passed {
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
+.time-card-passed .time-value,
 .time-card-passed .time-card-value {
   text-decoration: line-through;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* Special styling for important times */
 .time-card.sunrise {
-  background: linear-gradient(135deg, #fff9e6 0%, #fff 100%);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 196, 92, 0.3) 0%, transparent 60%),
+    linear-gradient(160deg, #1d3357 0%, #1a365d 45%, #10294a 100%);
 }
 
 .time-card.sunset {
-  background: linear-gradient(135deg, #ffe6cc 0%, #fff 100%);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 150, 90, 0.28) 0%, transparent 60%),
+    linear-gradient(160deg, #22304f 0%, #1a2f52 45%, #0f2442 100%);
 }
 
 /* צאת הכוכבים - Night time styling */
 .time-card.tzeit {
-  background: linear-gradient(135deg, #1a1f3c 0%, #2d3a5c 50%, #1a2744 100%);
-  color: var(--color-white);
-  border-color: rgba(100, 120, 180, 0.3);
-}
-
-.time-card.tzeit .time-name {
-  color: var(--color-white);
-}
-
-.time-card.tzeit .time-value {
-  color: var(--color-gold-light);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(160, 180, 255, 0.22) 0%, transparent 60%),
+    linear-gradient(160deg, #0d1225 0%, #1a2744 50%, #0a0f1f 100%);
 }
 
 .time-card.tzeit .time-icon {
@@ -607,82 +720,51 @@ body {
   background: linear-gradient(90deg, rgba(255, 215, 100, 0.6), rgba(200, 180, 255, 0.6));
 }
 
-@media (prefers-color-scheme: dark) {
-  .time-card.sunrise {
-    background: linear-gradient(135deg, #2d2a1f 0%, var(--bg-card) 100%);
-  }
-  
-  .time-card.sunset {
-    background: linear-gradient(135deg, #2d2520 0%, var(--bg-card) 100%);
-  }
-  
-  .time-card.tzeit {
-    background: linear-gradient(135deg, #0d1225 0%, #1a2744 50%, #0d1225 100%);
-  }
-  
-  .settings-item {
-    background: var(--color-gray-800);
-  }
-  
-  .settings-item:hover {
-    background: var(--color-gray-700);
-  }
-  
-  .settings-item-name {
-    color: var(--color-white);
-  }
-  
-  .settings-item-english {
-    color: var(--color-gray-400);
-  }
-  
-  .settings-description {
-    color: var(--color-gray-400);
-  }
-  
-  .settings-actions {
-    border-top-color: var(--color-gray-700);
-  }
-  
-  .modal {
-    background: var(--color-gray-900);
-  }
-  
-  .modal-title {
-    color: var(--color-white);
-  }
-  
-  .modal-close {
-    color: var(--color-gray-400);
-  }
-  
-  .search-input-wrapper {
-    background: var(--color-gray-700);
-  }
-  
-  .search-input {
-    color: var(--color-white);
-  }
-  
-  .search-results {
-    background: var(--color-gray-800);
-  }
-  
-  .search-result-item {
-    border-bottom-color: var(--color-gray-700);
-  }
-  
-  .search-result-item:hover {
-    background: var(--color-gray-700);
-  }
-  
-  .location-item {
-    background: var(--color-gray-700);
-  }
-  
-  .location-item:hover {
-    background: var(--color-gray-600);
-  }
+/* ============================================
+   List View - rows instead of cards
+   ============================================ */
+.view-list .time-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  text-align: right;
+  border-radius: var(--radius-md);
+}
+
+.view-list .time-card::after {
+  inset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.view-list .time-card:hover,
+.view-list .time-card:focus-within {
+  transform: none;
+}
+
+.view-list .time-card.active {
+  transform: none;
+}
+
+.view-list .time-card-header {
+  margin-bottom: 0;
+}
+
+.view-list .time-card-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.view-list .time-name {
+  margin-bottom: 0;
+}
+
+.view-list .time-icon {
+  font-size: var(--font-size-xl);
 }
 
 /* ============================================
@@ -726,27 +808,8 @@ body {
 }
 
 .shabbat-card {
-  position: relative;
   padding: var(--space-xl) var(--space-lg);
   text-align: center;
-  color: var(--text-light);
-  background:
-    radial-gradient(circle at 50% 0%, rgba(212, 168, 87, 0.22) 0%, transparent 60%),
-    linear-gradient(160deg, #15294a 0%, #1a365d 45%, #0f2442 100%);
-  border: 2px solid var(--color-gold);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl), 0 0 0 6px rgba(212, 168, 87, 0.12);
-  overflow: hidden;
-}
-
-/* Inner decorative frame */
-.shabbat-card::before {
-  content: '';
-  position: absolute;
-  inset: 8px;
-  border: 1px solid rgba(212, 168, 87, 0.45);
-  border-radius: var(--radius-md);
-  pointer-events: none;
 }
 
 .shabbat-ornament {
@@ -781,11 +844,6 @@ body {
 }
 
 .shabbat-eyebrow {
-  display: block;
-  font-size: var(--font-size-xs);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.7);
   margin-bottom: var(--space-sm);
 }
 
@@ -954,12 +1012,14 @@ body {
 
 /* Secondary Button */
 .btn-secondary {
-  background: var(--color-gray-200);
-  color: var(--text-primary);
+  background: var(--surface-soft);
+  color: var(--text-light);
+  border: 1px solid rgba(212, 168, 87, 0.35);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--color-gray-300);
+  background: var(--surface-soft-hover);
+  border-color: var(--color-gold);
 }
 
 /* Gold Button */
@@ -980,14 +1040,20 @@ body {
   height: 48px;
   padding: 0;
   border-radius: var(--radius-full);
-  background: var(--bg-card);
-  color: var(--color-primary);
+  background: var(--surface-soft);
+  color: var(--color-gold-light);
+  border: 1px solid rgba(212, 168, 87, 0.4);
   box-shadow: var(--shadow-md);
 }
 
 .btn-icon:hover:not(:disabled) {
-  box-shadow: var(--shadow-md);
+  background: var(--surface-soft-hover);
+  border-color: var(--color-gold);
   color: var(--color-gold);
+}
+
+.btn-icon.spinning {
+  animation: spin 1s linear infinite;
 }
 
 /* Refresh Button */
@@ -1012,7 +1078,9 @@ body {
   bottom: calc(var(--space-lg) + var(--safe-area-bottom));
   left: var(--space-lg);
   z-index: var(--z-sticky);
-  box-shadow: var(--shadow-lg);
+  background: var(--panel-bg);
+  border: 2px solid var(--color-gold);
+  box-shadow: var(--shadow-lg), 0 0 0 4px rgba(212, 168, 87, 0.12);
 }
 
 @keyframes spin {
@@ -1168,53 +1236,27 @@ body {
 }
 
 .alert-error {
-  background: #fde8e8;
-  color: #9b1c1c;
-  border: 1px solid #f8b4b4;
+  background: rgba(220, 53, 69, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(248, 113, 113, 0.45);
 }
 
 .alert-warning {
-  background: #fdf6b2;
-  color: #8e4b10;
-  border: 1px solid #fce96a;
+  background: rgba(240, 193, 75, 0.15);
+  color: #fcd34d;
+  border: 1px solid rgba(240, 193, 75, 0.45);
 }
 
 .alert-info {
-  background: #e1effe;
-  color: #1e429f;
-  border: 1px solid #a4cafe;
+  background: rgba(96, 165, 250, 0.15);
+  color: #bfdbfe;
+  border: 1px solid rgba(96, 165, 250, 0.45);
 }
 
 .alert-success {
-  background: #def7ec;
-  color: #03543f;
-  border: 1px solid #84e1bc;
-}
-
-@media (prefers-color-scheme: dark) {
-  .alert-error {
-    background: #451a1a;
-    color: #f8b4b4;
-    border-color: #9b1c1c;
-  }
-  
-  .alert-warning {
-    background: #3d3510;
-    color: #fce96a;
-    border-color: #8e4b10;
-  }
-  
-  .alert-info {
-    background: #1a2744;
-    color: #a4cafe;
-    border-color: #1e429f;
-  }
-  
-  .alert-success {
-    background: #0d3321;
-    color: #84e1bc;
-    border-color: #03543f;
-  }
+  background: rgba(74, 222, 128, 0.15);
+  color: #bbf7d0;
+  border: 1px solid rgba(74, 222, 128, 0.45);
 }
 
 /* ============================================
@@ -1242,7 +1284,11 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--bg-card);
+  color: var(--text-light);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(212, 168, 87, 0.18) 0%, transparent 55%),
+    linear-gradient(160deg, #15294a 0%, #1a365d 45%, #0f2442 100%);
+  border-top: 2px solid var(--color-gold);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   padding: var(--space-lg);
   padding-bottom: calc(var(--space-lg) + var(--safe-area-bottom));
@@ -1251,6 +1297,7 @@ body {
   transition: transform var(--transition-normal);
   max-height: 80vh;
   overflow-y: auto;
+  box-shadow: var(--shadow-xl);
 }
 
 .modal-overlay.active + .modal,
@@ -1261,7 +1308,7 @@ body {
 .modal-handle {
   width: 40px;
   height: 4px;
-  background: var(--color-gray-300);
+  background: rgba(212, 168, 87, 0.5);
   border-radius: var(--radius-full);
   margin: 0 auto var(--space-lg);
 }
@@ -1271,20 +1318,28 @@ body {
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid rgba(212, 168, 87, 0.3);
 }
 
 .modal-title {
+  font-family: var(--font-family-hebrew);
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
+  color: var(--color-gold-light);
 }
 
 .modal-close {
   background: none;
   border: none;
   font-size: var(--font-size-xl);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   padding: var(--space-sm);
+}
+
+.modal-close:hover {
+  color: var(--color-gold);
 }
 
 .modal-content {
@@ -1316,7 +1371,7 @@ body {
    ============================================ */
 .settings-description {
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: var(--space-md);
 }
 
@@ -1329,14 +1384,15 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-md);
-  background: var(--color-gray-100);
+  background: var(--surface-soft);
+  border: 1px solid var(--surface-border);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-sm);
   transition: background var(--transition-fast);
 }
 
 .settings-item:hover {
-  background: var(--color-gray-200);
+  background: var(--surface-soft-hover);
 }
 
 .settings-item-info {
@@ -1356,12 +1412,12 @@ body {
 
 .settings-item-name {
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
+  color: var(--text-light);
 }
 
 .settings-item-english {
   font-size: var(--font-size-xs);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .settings-actions {
@@ -1369,7 +1425,7 @@ body {
   gap: var(--space-sm);
   margin-top: var(--space-lg);
   padding-top: var(--space-md);
-  border-top: 1px solid var(--color-gray-200);
+  border-top: 1px solid rgba(212, 168, 87, 0.3);
 }
 
 .settings-actions .btn {
@@ -1422,14 +1478,14 @@ body {
   position: relative;
   width: 52px;
   height: 28px;
-  background: var(--color-gray-300);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 14px;
   cursor: pointer;
   transition: background var(--transition-fast);
 }
 
 .toggle-switch.active {
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold));
 }
 
 .toggle-switch::after {
@@ -1512,8 +1568,22 @@ body {
 .footer {
   text-align: center;
   padding: var(--space-lg);
-  color: var(--text-secondary);
+  padding-bottom: calc(var(--space-2xl) + var(--safe-area-bottom));
+  color: rgba(255, 255, 255, 0.55);
   font-size: var(--font-size-xs);
+}
+
+.footer a {
+  color: var(--color-gold);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: var(--color-gold-light);
+}
+
+.footer-note {
+  margin-top: var(--space-xs);
 }
 
 .footer-links {
@@ -1748,10 +1818,15 @@ input, select, textarea {
   position: relative;
   display: flex;
   align-items: center;
-  background: var(--color-gray-100);
+  background: var(--surface-soft);
+  border: 1px solid var(--surface-border);
   border-radius: var(--radius-lg);
   padding: var(--space-sm) var(--space-md);
   margin-bottom: var(--space-sm);
+}
+
+.search-input-wrapper:focus-within {
+  border-color: var(--color-gold);
 }
 
 .search-icon {
@@ -1766,11 +1841,11 @@ input, select, textarea {
   font-size: var(--font-size-md);
   font-family: var(--font-family);
   outline: none;
-  color: var(--text-primary);
+  color: var(--text-light);
 }
 
 .search-input::placeholder {
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .search-clear {
@@ -1790,7 +1865,8 @@ input, select, textarea {
 
 /* Search Results */
 .search-results {
-  background: var(--color-white);
+  background: #12243f;
+  border: 1px solid rgba(212, 168, 87, 0.3);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   max-height: 300px;
@@ -1800,7 +1876,7 @@ input, select, textarea {
 
 .search-result-item {
   padding: var(--space-md);
-  border-bottom: 1px solid var(--color-gray-200);
+  border-bottom: 1px solid var(--surface-border);
   cursor: pointer;
   transition: background var(--transition-fast);
 }
@@ -1810,12 +1886,12 @@ input, select, textarea {
 }
 
 .search-result-item:hover {
-  background: var(--color-gray-100);
+  background: var(--surface-soft-hover);
 }
 
 .search-result-name {
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
+  color: var(--color-gold-light);
   display: block;
   margin-bottom: var(--space-xs);
 }
@@ -1843,17 +1919,18 @@ input, select, textarea {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  color: var(--color-white);
-  border: none;
+  background: var(--surface-soft);
+  color: var(--text-light);
+  border: 1px solid rgba(212, 168, 87, 0.45);
   border-radius: var(--radius-lg);
   padding: var(--space-md);
   margin-bottom: var(--space-lg);
   cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
 }
 
 .location-current:hover {
+  background: var(--surface-soft-hover);
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
@@ -1884,8 +1961,8 @@ input, select, textarea {
   font-size: var(--font-size-xl);
 }
 
-/* Location Sections */
-.location-section {
+/* Location Sections (inside the location picker modal) */
+.location-group {
   margin-bottom: var(--space-xl);
 }
 
@@ -1897,9 +1974,10 @@ input, select, textarea {
 }
 
 .location-section-title {
+  font-family: var(--font-family-hebrew);
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
+  color: var(--color-gold-light);
 }
 
 .location-list {
@@ -1910,7 +1988,7 @@ input, select, textarea {
 
 .location-empty {
   text-align: center;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.6);
   font-size: var(--font-size-sm);
   padding: var(--space-lg);
 }
@@ -1920,7 +1998,8 @@ input, select, textarea {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  background: var(--color-gray-100);
+  background: var(--surface-soft);
+  border: 1px solid var(--surface-border);
   border-radius: var(--radius-md);
   padding: var(--space-md);
   cursor: pointer;
@@ -1928,7 +2007,7 @@ input, select, textarea {
 }
 
 .location-item:hover {
-  background: var(--color-gray-200);
+  background: var(--surface-soft-hover);
   transform: translateX(-4px);
 }
 
@@ -1942,13 +2021,13 @@ input, select, textarea {
 
 .location-item-name {
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
+  color: var(--text-light);
   display: block;
 }
 
 .location-item-details {
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.6);
   display: block;
   margin-top: var(--space-xs);
 }

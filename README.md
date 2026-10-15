@@ -8,13 +8,16 @@ A beautiful, mobile-first Progressive Web App (PWA) for displaying Jewish prayer
 ## ✨ Features
 
 - 📍 **Auto-location detection** with city name display
-- ⏰ **10 daily Zmanim** from Dawn to Nightfall
+- 🔐 **Permission asked only once** - the location prompt appears on the first run
+  only, and as long as the permission stays valid the app never asks again
+- ⏰ **10 daily Zmanim** from Dawn to Nightfall, always sorted by time (earliest first)
+- 🔀 **Grid / list view switch** - one tap to move between cards and a compact list
 - 🕯️ **Shabbat times section** with the weekly Parasha, candle lighting & Havdalah
 - 🕐 **Live countdown** to next prayer time
 - 📅 **Hebrew & Gregorian dates**
 - 🌍 **RTL Hebrew interface**
 - 📱 **iPhone optimized** with safe-area support
-- 🌙 **Dark mode** support
+- 🌙 **Elegant dark theme** across the whole app
 - 💾 **Offline capable** with service worker
 - 🎨 **Elegant design** with rounded edges and smooth animations
 - ⚡ **Fast & lightweight** - Pure vanilla JavaScript
@@ -129,10 +132,12 @@ ZmaneyHaiom/
 ├── manifest.json       # PWA configuration
 ├── sw.js              # Service Worker
 ├── css/
-│   └── styles.css     # All styling (~1300 lines)
+│   └── styles.css     # All styling (~2000 lines)
 ├── js/
 │   ├── app.js         # Main application logic
 │   ├── api.js         # Hebcal API integration
+│   ├── geocoding.js   # Location search & favorites
+│   ├── settings.js    # Display preferences (filters, view mode)
 │   └── location.js    # Geolocation service
 └── icons/
     ├── icon-192.svg   # App icon (192x192)
@@ -141,14 +146,31 @@ ZmaneyHaiom/
 
 ## 🎨 Design Features
 
+The whole app shares a single "royal navy & gold" design language, taken from
+the Shabbat card: every section (location, date, countdown, zmanim cards and
+the modals) is rendered as a `.panel` with the same navy gradient, gold frame
+and thin inner border.
+
 - **Elegant rounded corners** throughout the app
-- **Gold & deep blue** color scheme
+- **Gold & deep blue** color scheme with a decorative inner frame
+- **Two view modes** for the zmanim - cards (grid) or a compact list
 - **Smooth animations** and transitions
-- **Card-based** layout for times
-- **Glass-morphism** effects
 - **Responsive grid** (1-3 columns based on screen size)
 - **Gradient backgrounds** and shadows
 - **Hover effects** with scale transforms
+
+## 📍 Location & Permissions
+
+The geolocation prompt is only triggered once:
+
+- **First run** - the browser permission prompt is shown and the answer is remembered
+- **Permission granted** - the location is refreshed silently, without any prompt
+- **Permission denied or dismissed** - the app falls back to the last known
+  location (or Jerusalem) and never prompts again on its own
+- **Manual city** - when a city is picked from the location picker, the GPS is
+  not used at all
+- The prompt is only shown again following an explicit user action: the refresh
+  button or "השתמש במיקום הנוכחי"
 
 ## 🔒 Privacy
 

@@ -7,6 +7,7 @@ const STORAGE_KEY = 'zmaneyHayom_settings';
 
 // Default settings - all zmanim visible
 const DEFAULT_SETTINGS = {
+    viewMode: 'grid',
     visibleZmanim: {
         dawn: true,
         tallitTefillin: true,
@@ -52,6 +53,7 @@ export function loadSettings() {
             // Merge with defaults to handle new zmanim
             return {
                 ...DEFAULT_SETTINGS,
+                ...parsed,
                 visibleZmanim: {
                     ...DEFAULT_SETTINGS.visibleZmanim,
                     ...parsed.visibleZmanim
@@ -103,6 +105,25 @@ export function setAllZmanim(visible) {
     });
     saveSettings(settings);
     return settings;
+}
+
+/**
+ * Get the current zmanim view mode ('grid' or 'list')
+ */
+export function getViewMode() {
+    return loadSettings().viewMode === 'list' ? 'list' : 'grid';
+}
+
+/**
+ * Persist the zmanim view mode
+ * @param {'grid'|'list'} mode
+ * @returns {'grid'|'list'} The stored mode
+ */
+export function setViewMode(mode) {
+    const settings = loadSettings();
+    settings.viewMode = mode === 'list' ? 'list' : 'grid';
+    saveSettings(settings);
+    return settings.viewMode;
 }
 
 /**

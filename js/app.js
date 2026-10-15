@@ -4,8 +4,12 @@
  */
 
 import { fetchZmanim, fetchShabbatTimes, getZmanimList } from './api.js';
-import { getLocationData, getLocationDataWithFallback, clearLocationCache } from './location.js';
-import { initSettingsPanel, applyFilters, isZmanVisible } from './settings.js';
+import { 
+    getLocationDataWithFallback, 
+    clearLocationCache, 
+    onPermissionChange 
+} from './location.js';
+import { initSettingsPanel, isZmanVisible, getViewMode, setViewMode } from './settings.js';
 import { 
     searchLocations, 
     getTimezoneFromCoords,
@@ -47,6 +51,8 @@ const elements = {
     errorMessage: document.getElementById('error-message'),
     retryBtn: document.getElementById('retry-btn'),
     zmanimContainer: document.getElementById('zmanim-container'),
+    zmanimToolbar: document.getElementById('zmanim-toolbar'),
+    viewToggle: document.getElementById('view-toggle'),
     nextZman: document.getElementById('next-zman'),
     nextZmanName: document.getElementById('next-zman-name'),
     nextZmanCountdown: document.getElementById('next-zman-countdown'),
@@ -91,6 +97,9 @@ async function init() {
     // Initialize settings panel
     initSettingsPanel();
     
+    // Initialize grid/list view toggle
+    initViewToggle();
+    
     // Initialize location picker
     initLocationPicker();
     
@@ -102,15 +111,23 @@ async function init() {
     // Display current date
     displayDates();
     
-    // Load zmanim - USE cache on initial load to avoid repeated permission requests
-    // Fresh location only requested when user explicitly clicks refresh
-    await loadZmanim(true);
+    // Load zmanim - the location permission prompt is only shown on the very
+    // first run; afterwards the granted permission or the cache is used
+    await loadZmanim();
+    
+    // If the user grants the permission later on, pick it up automatically
+    onPermissionChange((state) => {
+        if (state === 'granted') {
+            clearLocationCache();
+            loadZmanim({ useCache: false });
+        }
+    });
     
     // Update countdown every second
     startCountdown();
     
     // Refresh zmanim every hour (use cache for location)
-    setInterval(() => loadZmanim(true), 60 * 60 * 1000);
+    setInterval(() => loadZmanim(), 60 * 60 * 1000);
 }
 
 /**
@@ -207,7 +224,7 @@ function initDatePicker() {
             displayDates();
             
             // Reload zmanim with new date
-            await loadZmanim(true);
+            await loadZmanim();
         }
     });
     
@@ -218,7 +235,7 @@ function initDatePicker() {
         
         updateDateUI();
         displayDates();
-        await loadZmanim(true);
+        await loadZmanim();
     });
 }
 
@@ -297,15 +314,42 @@ function displayDates() {
 }
 
 /**
- * Load zmanim data
+ * Resolve the location to use for the zmanim calculations
+ * A manually picked location always wins, so the GPS permission is never
+ * needed (nor requested) while the user has chosen a city himself
+ * @param {Object} [options]
+ * @param {boolean} [options.useCache=true] - Use the cached GPS location
+ * @param {boolean} [options.allowPrompt=false] - Allow a permission prompt
+ * @returns {Promise<Object>} Location data
  */
-async function loadZmanim(useCache = false) {
+async function resolveLocation({ useCache = true, allowPrompt = false } = {}) {
+    if (getLocationMode() === 'manual') {
+        const saved = getCurrentSavedLocation();
+        if (saved) {
+            return {
+                ...saved,
+                cityName: saved.name || saved.cityName,
+                timezone: saved.timezone || getTimezoneFromCoords(saved.latitude, saved.longitude)
+            };
+        }
+    }
+    
+    return getLocationDataWithFallback({ useCache, allowPrompt });
+}
+
+/**
+ * Load zmanim data
+ * @param {Object} [options]
+ * @param {boolean} [options.useCache=true] - Use the cached location
+ * @param {boolean} [options.allowPrompt=false] - Allow a permission prompt
+ *        (only for explicit user actions such as the refresh button)
+ */
+async function loadZmanim(options = {}) {
     showLoading();
     hideError();
     
     try {
-        // Get location - don't use cache on first load to ensure we request permission
-        const location = await getLocationDataWithFallback(useCache);
+        const location = await resolveLocation(options);
         elements.locationName.textContent = location.cityName;
         
         // Show a hint if using default location
@@ -447,7 +491,7 @@ function getShabbatIcon(key) {
 }
 
 /**
- * Display zmanim in the grid
+ * Display zmanim in the container, sorted chronologically (earliest first)
  */
 function displayZmanim(zmanim) {
     const zmanimList = getZmanimList(zmanim);
@@ -507,6 +551,38 @@ function getZmanIcon(key) {
 }
 
 /**
+ * Initialize the grid / list view toggle
+ */
+function initViewToggle() {
+    if (!elements.viewToggle) return;
+    
+    applyViewMode(getViewMode());
+    
+    elements.viewToggle.querySelectorAll('.view-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            applyViewMode(setViewMode(btn.dataset.view));
+        });
+    });
+}
+
+/**
+ * Apply a view mode to the zmanim container and the toggle buttons
+ * @param {'grid'|'list'} mode
+ */
+function applyViewMode(mode) {
+    elements.zmanimContainer.classList.toggle('view-list', mode === 'list');
+    elements.zmanimContainer.classList.toggle('view-grid', mode !== 'list');
+    
+    if (!elements.viewToggle) return;
+    
+    elements.viewToggle.querySelectorAll('.view-toggle-btn').forEach(btn => {
+        const isActive = btn.dataset.view === mode;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', isActive);
+    });
+}
+
+/**
  * Update next zman countdown
  */
 function updateNextZman() {
@@ -556,11 +632,12 @@ function startCountdown() {
 
 /**
  * Handle refresh button click
+ * This is an explicit user action, so a permission prompt is allowed here
  */
 async function handleRefresh() {
     elements.refreshBtn.classList.add('spinning');
     clearLocationCache();
-    await loadZmanim(false);
+    await loadZmanim({ useCache: false, allowPrompt: true });
     elements.refreshBtn.classList.remove('spinning');
 }
 
@@ -568,7 +645,7 @@ async function handleRefresh() {
  * Handle retry button click
  */
 async function handleRetry() {
-    await loadZmanim(true);
+    await loadZmanim();
 }
 
 // UI Helper Functions
@@ -590,7 +667,8 @@ function hideError() {
 }
 
 function showZmanim() {
-    elements.zmanimContainer.style.display = 'grid';
+    elements.zmanimContainer.classList.remove('hidden');
+    elements.zmanimToolbar?.classList.remove('hidden');
 }
 
 // Location Picker Functions
@@ -626,12 +704,12 @@ function initLocationPicker() {
         elements.searchResults.style.display = 'none';
     });
     
-    // Use current location
+    // Use current location - explicit user action, prompting is allowed
     elements.useCurrentLocation.addEventListener('click', async () => {
         closeLocationModal();
         setLocationMode('auto');
         clearLocationCache();
-        await loadZmanim(false);
+        await loadZmanim({ useCache: false, allowPrompt: true });
     });
 }
 
@@ -692,29 +770,8 @@ async function selectLocation(location) {
     // Close modal
     closeLocationModal();
     
-    // Update location display
-    elements.locationName.textContent = location.name;
-    elements.locationName.style.color = '';
-    elements.locationName.title = '';
-    
-    // Fetch new zmanim
-    showLoading();
-    try {
-        const zmanim = await fetchZmanim(
-            location.latitude,
-            location.longitude,
-            location.timezone
-        );
-        
-        currentZmanim = zmanim;
-        displayZmanim(zmanim);
-        updateNextZman();
-        hideLoading();
-        showZmanim();
-    } catch (error) {
-        hideLoading();
-        showError(error.message);
-    }
+    // Reload every time-based section for the newly selected location
+    await loadZmanim();
 }
 
 function renderFavorites() {
