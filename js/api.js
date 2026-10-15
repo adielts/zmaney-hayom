@@ -5,6 +5,7 @@
  */
 
 const HEBCAL_API_BASE = 'https://www.hebcal.com/zmanim';
+const HEBCAL_SHABBAT_API = 'https://www.hebcal.com/shabbat';
 
 /**
  * Formats a Date object or ISO time string to HH:MM format
@@ -286,6 +287,52 @@ function getOhrHachaimAdjustments(latitude, longitude) {
 }
 
 /**
+ * Format a Date as YYYY-MM-DD (local time)
+ * @param {Date} date
+ * @returns {string}
+ */
+function formatDateParam(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+/**
+ * Fetch sunrise/sunset for a given day, adjusted to אור החיים methodology
+ * @param {number} latitude
+ * @param {number} longitude
+ * @param {string} timezone - IANA timezone identifier
+ * @param {Date} date - Day to fetch
+ * @returns {Promise<{sunrise: Date, sunset: Date}>}
+ */
+async function fetchSunTimes(latitude, longitude, timezone, date) {
+    const url = new URL(HEBCAL_API_BASE);
+    url.searchParams.set('cfg', 'json');
+    url.searchParams.set('latitude', latitude);
+    url.searchParams.set('longitude', longitude);
+    url.searchParams.set('tzid', timezone);
+    url.searchParams.set('date', formatDateParam(date));
+
+    const response = await fetch(url.toString());
+
+    if (!response.ok) {
+        throw new Error(`Hebcal API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const times = data.times;
+
+    // Get אור החיים adjustments for this location
+    const adjustments = getOhrHachaimAdjustments(latitude, longitude);
+
+    return {
+        sunrise: new Date(new Date(times.sunrise).getTime() + (adjustments.sunriseAdjust * 60 * 1000)),
+        sunset: new Date(new Date(times.sunset).getTime() + (adjustments.sunsetAdjust * 60 * 1000))
+    };
+}
+
+/**
  * Fetch zmanim from Hebcal API and calculate according to אור החיים
  * @param {number} latitude - Location latitude
  * @param {number} longitude - Location longitude  
@@ -296,42 +343,8 @@ function getOhrHachaimAdjustments(latitude, longitude) {
 async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
     const targetDate = debugDate || new Date();
     
-    // Format date as YYYY-MM-DD
-    const year = targetDate.getFullYear();
-    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-    const day = String(targetDate.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${day}`;
-    
-    const url = new URL(HEBCAL_API_BASE);
-    url.searchParams.set('cfg', 'json');
-    url.searchParams.set('latitude', latitude);
-    url.searchParams.set('longitude', longitude);
-    url.searchParams.set('tzid', timezone);
-    url.searchParams.set('date', dateStr);
-    
     try {
-        const response = await fetch(url.toString());
-        
-        if (!response.ok) {
-            throw new Error(`Hebcal API error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        const times = data.times;
-        
-        // Get אור החיים adjustments for this location
-        const adjustments = getOhrHachaimAdjustments(latitude, longitude);
-        
-        // Parse base times from API and apply adjustments
-        let sunrise = new Date(times.sunrise);
-        let sunset = new Date(times.sunset);
-        
-        // Adjust sunrise and sunset according to אור החיים methodology
-        sunrise = new Date(sunrise.getTime() + (adjustments.sunriseAdjust * 60 * 1000));
-        sunset = new Date(sunset.getTime() + (adjustments.sunsetAdjust * 60 * 1000));
-        
-        // Check if Jerusalem area for candle lighting
-        const inJerusalem = isJerusalemArea(latitude, longitude);
+        const { sunrise, sunset } = await fetchSunTimes(latitude, longitude, timezone, targetDate);
         
         // Calculate צאת ר"ת first (needed for MGA calculations)
         const tzeitRT = calculateTzeitRT(sunrise, sunset);
@@ -350,9 +363,6 @@ async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
         const minchaKetana = calculateMinchaKetana(sunrise, sunset);
         const plagHaMincha = calculatePlagHaMincha(sunrise, sunset);
         const tzeit = calculateTzeitHakochavim(sunrise, sunset);
-        
-        // Get day of week (0 = Sunday, 5 = Friday, 6 = Saturday)
-        const dayOfWeek = targetDate.getDay();
         
         // Build zmanim object
         const zmanim = {
@@ -436,64 +446,166 @@ async function fetchZmanim(latitude, longitude, timezone, debugDate = null) {
             }
         };
         
-        // Add Shabbat times if Friday or Saturday
-        if (dayOfWeek === 5) {
-            // Friday - show candle lighting and צאת שבת for tomorrow
-            const candleLighting = calculateCandleLighting(sunset, inJerusalem);
-            zmanim.candleLighting = {
-                time: candleLighting.toISOString(),
-                formatted: formatTime(candleLighting),
-                hebrew: inJerusalem ? 'הדלקת נרות (40 דק\')' : 'הדלקת נרות',
-                english: 'Candle Lighting'
-            };
-            
-            // Estimate Saturday's sunset (approximately same time)
-            const saturdaySunset = new Date(sunset);
-            saturdaySunset.setDate(saturdaySunset.getDate() + 1);
-            
-            const tzeitShabbat = calculateTzeitShabbat(saturdaySunset);
-            zmanim.havdalah = {
-                time: tzeitShabbat.toISOString(),
-                formatted: formatTime(tzeitShabbat),
-                hebrew: 'צאת השבת',
-                english: 'Shabbat Ends'
-            };
-            
-            // Calculate Saturday's ר"ת
-            const saturdaySunrise = new Date(sunrise);
-            saturdaySunrise.setDate(saturdaySunrise.getDate() + 1);
-            const saturdayTzeitRT = calculateTzeitRT(saturdaySunrise, saturdaySunset);
-            zmanim.havdalahRT = {
-                time: saturdayTzeitRT.toISOString(),
-                formatted: formatTime(saturdayTzeitRT),
-                hebrew: 'צאת שבת ר"ת',
-                english: 'Shabbat Ends (RT)'
-            };
-        }
-        
-        // Saturday - show צאת שבת
-        if (dayOfWeek === 6) {
-            const tzeitShabbat = calculateTzeitShabbat(sunset);
-            zmanim.havdalah = {
-                time: tzeitShabbat.toISOString(),
-                formatted: formatTime(tzeitShabbat),
-                hebrew: 'צאת השבת',
-                english: 'Shabbat Ends'
-            };
-            
-            zmanim.havdalahRT = {
-                time: tzeitRT.toISOString(),
-                formatted: formatTime(tzeitRT),
-                hebrew: 'צאת שבת ר"ת',
-                english: 'Shabbat Ends (RT)'
-            };
-        }
-        
         return zmanim;
         
     } catch (error) {
         console.error('Hebcal API fetch error:', error);
         throw new Error('שגיאה בטעינת זמני התפילה. אנא נסה שוב.');
+    }
+}
+
+/**
+ * Get the Friday/Saturday of the relevant Shabbat for a given date
+ * On Saturday the current Shabbat is returned, otherwise the upcoming one
+ * @param {Date} fromDate - Reference date
+ * @returns {{friday: Date, saturday: Date}}
+ */
+function getShabbatDates(fromDate) {
+    const friday = new Date(fromDate.getTime());
+    friday.setHours(12, 0, 0, 0);
+    
+    const dayOfWeek = friday.getDay(); // 0 = Sunday, 5 = Friday, 6 = Saturday
+    friday.setDate(friday.getDate() + (dayOfWeek === 6 ? -1 : 5 - dayOfWeek));
+    
+    const saturday = new Date(friday.getTime());
+    saturday.setDate(saturday.getDate() + 1);
+    
+    return { friday, saturday };
+}
+
+/**
+ * Fetch the parasha / holiday information for a specific Shabbat
+ * @param {number} latitude
+ * @param {number} longitude
+ * @param {string} timezone - IANA timezone identifier
+ * @param {Date} saturday - The Shabbat day
+ * @returns {Promise<{title: string, titleEnglish: string, tags: string[]}>}
+ */
+async function fetchShabbatInfo(latitude, longitude, timezone, saturday) {
+    const url = new URL(HEBCAL_SHABBAT_API);
+    url.searchParams.set('cfg', 'json');
+    url.searchParams.set('latitude', latitude);
+    url.searchParams.set('longitude', longitude);
+    url.searchParams.set('tzid', timezone);
+    url.searchParams.set('geo', 'pos');
+    url.searchParams.set('lg', 'h');
+    url.searchParams.set('gy', saturday.getFullYear());
+    url.searchParams.set('gm', saturday.getMonth() + 1);
+    url.searchParams.set('gd', saturday.getDate());
+    
+    const response = await fetch(url.toString());
+    
+    if (!response.ok) {
+        throw new Error(`Hebcal Shabbat API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const items = data.items || [];
+    const saturdayStr = formatDateParam(saturday);
+    const onSaturday = (item) => typeof item.date === 'string' && item.date.startsWith(saturdayStr);
+    
+    // פרשת השבוע, or the Yom Tov name when the Shabbat is a festival
+    const parasha = items.find(item => item.category === 'parashat' && onSaturday(item))
+        || items.find(item => item.category === 'parashat');
+    const yomTov = items.find(item => item.category === 'holiday' && item.subcat !== 'shabbat' && onSaturday(item));
+    
+    // Extra labels such as שבת זכור / מברכים חודש ניסן
+    const tags = items
+        .filter(item => onSaturday(item) && (
+            (item.category === 'holiday' && item.subcat === 'shabbat') ||
+            item.category === 'mevarchim'
+        ))
+        .map(item => item.hebrew)
+        .filter(Boolean);
+    
+    return {
+        title: parasha?.hebrew || yomTov?.hebrew || 'שבת קודש',
+        titleEnglish: parasha?.title_orig || yomTov?.title_orig || 'Shabbat',
+        tags
+    };
+}
+
+/**
+ * Build the Shabbat times for a specific Friday/Saturday pair
+ * @param {number} latitude
+ * @param {number} longitude
+ * @param {string} timezone - IANA timezone identifier
+ * @param {{friday: Date, saturday: Date}} dates
+ * @returns {Promise<Object>} Shabbat data object
+ */
+async function buildShabbatTimes(latitude, longitude, timezone, dates) {
+    const [fridayTimes, saturdayTimes, info] = await Promise.all([
+        fetchSunTimes(latitude, longitude, timezone, dates.friday),
+        fetchSunTimes(latitude, longitude, timezone, dates.saturday),
+        fetchShabbatInfo(latitude, longitude, timezone, dates.saturday)
+    ]);
+    
+    const inJerusalem = isJerusalemArea(latitude, longitude);
+    const candleLighting = calculateCandleLighting(fridayTimes.sunset, inJerusalem);
+    const havdalah = calculateTzeitShabbat(saturdayTimes.sunset);
+    const havdalahRT = calculateTzeitRT(saturdayTimes.sunrise, saturdayTimes.sunset);
+    
+    const toZman = (key, date, hebrew, english, note) => ({
+        key,
+        time: date.toISOString(),
+        formatted: formatTime(date),
+        hebrew,
+        english,
+        note
+    });
+    
+    const times = [
+        toZman('candleLighting', candleLighting, 'הדלקת נרות', 'Candle Lighting', `${inJerusalem ? 40 : 20} דק׳ לפני השקיעה`)
+    ];
+    
+    // In Jerusalem the custom is 40 minutes - show the common 20 minutes as well
+    if (inJerusalem) {
+        const candleLighting20 = calculateCandleLighting(fridayTimes.sunset, false);
+        times.push(toZman('candleLighting20', candleLighting20, 'הדלקת נרות', 'Candle Lighting', '20 דק׳ לפני השקיעה'));
+    }
+    
+    times.push(
+        toZman('havdalah', havdalah, 'צאת השבת', 'Shabbat Ends', '30 דק׳ אחרי השקיעה'),
+        toZman('havdalahRT', havdalahRT, 'צאת שבת ר"ת', 'Shabbat Ends (RT)', '72 דק׳ זמניות')
+    );
+    
+    return {
+        parasha: info.title,
+        parashaEnglish: info.titleEnglish,
+        tags: info.tags,
+        fridayDate: dates.friday.toISOString(),
+        saturdayDate: dates.saturday.toISOString(),
+        times
+    };
+}
+
+/**
+ * Fetch the times of the upcoming (or current) Shabbat, including פרשת השבוע
+ * Times are calculated according to אור החיים, like the rest of the app
+ * @param {number} latitude - Location latitude
+ * @param {number} longitude - Location longitude
+ * @param {string} timezone - IANA timezone identifier
+ * @param {Date} baseDate - Optional reference date (default: current date)
+ * @returns {Promise<Object>} Shabbat data object
+ */
+async function fetchShabbatTimes(latitude, longitude, timezone, baseDate = null) {
+    try {
+        const dates = getShabbatDates(baseDate || new Date());
+        let shabbat = await buildShabbatTimes(latitude, longitude, timezone, dates);
+        
+        // On Saturday night the Shabbat is over - move on to the next one
+        const havdalah = shabbat.times.find(zman => zman.key === 'havdalah');
+        if (!baseDate && havdalah && new Date(havdalah.time) < new Date()) {
+            dates.friday.setDate(dates.friday.getDate() + 7);
+            dates.saturday.setDate(dates.saturday.getDate() + 7);
+            shabbat = await buildShabbatTimes(latitude, longitude, timezone, dates);
+        }
+        
+        return shabbat;
+        
+    } catch (error) {
+        console.error('Hebcal Shabbat fetch error:', error);
+        throw new Error('שגיאה בטעינת זמני השבת. אנא נסה שוב.');
     }
 }
 
@@ -515,11 +627,8 @@ function getZmanimList(zmanim) {
         'minchaGedola', 
         'minchaKetana',
         'plagHaMincha',
-        'candleLighting',
         'sunset', 
-        'tzeit',
-        'havdalah',
-        'havdalahRT'
+        'tzeit'
     ];
     
     return keys
@@ -531,4 +640,4 @@ function getZmanimList(zmanim) {
 }
 
 // Export functions for use in other modules
-export { fetchZmanim, formatTime, getZmanimList };
+export { fetchZmanim, fetchShabbatTimes, formatTime, getZmanimList };

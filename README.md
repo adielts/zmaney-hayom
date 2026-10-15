@@ -9,6 +9,7 @@ A beautiful, mobile-first Progressive Web App (PWA) for displaying Jewish prayer
 
 - 📍 **Auto-location detection** with city name display
 - ⏰ **10 daily Zmanim** from Dawn to Nightfall
+- 🕯️ **Shabbat times section** with the weekly Parasha, candle lighting & Havdalah
 - 🕐 **Live countdown** to next prayer time
 - 📅 **Hebrew & Gregorian dates**
 - 🌍 **RTL Hebrew interface**
@@ -30,6 +31,22 @@ A beautiful, mobile-first Progressive Web App (PWA) for displaying Jewish prayer
 8. **פלג המנחה** - Plag HaMincha
 9. **שקיעה** - Sunset
 10. **צאת הכוכבים** - Nightfall (Tzeit)
+
+## 🕯️ Shabbat Times
+
+A dedicated section at the bottom of the page always shows the upcoming Shabbat
+(the current one until it ends on Saturday night), starting with its פרשת שבוע:
+
+1. **הדלקת נרות** - Candle lighting (20 minutes before sunset, 40 in Jerusalem)
+2. **הדלקת נרות** - Candle lighting 20 minutes before sunset (shown in Jerusalem in addition to the 40 minutes)
+3. **צאת השבת** - Shabbat ends (30 minutes after sunset)
+4. **צאת שבת ר"ת** - Shabbat ends according to Rabbeinu Tam (72 seasonal minutes)
+
+The Parasha (or the Yom Tov name when Shabbat is a festival), together with
+labels such as שבת זכור / מברכים החודש, comes from the
+[Hebcal Shabbat API](https://www.hebcal.com/home/197/shabbat-times-rest-api),
+while the times themselves are calculated according to לוח אור החיים like the
+rest of the app.
 
 ## 🚀 Getting Started
 

@@ -3,7 +3,7 @@
  * Coordinates all modules and handles UI
  */
 
-import { fetchZmanim, getZmanimList } from './api.js';
+import { fetchZmanim, fetchShabbatTimes, getZmanimList } from './api.js';
 import { getLocationData, getLocationDataWithFallback, clearLocationCache } from './location.js';
 import { initSettingsPanel, applyFilters, isZmanVisible } from './settings.js';
 import { 
@@ -52,6 +52,12 @@ const elements = {
     nextZmanCountdown: document.getElementById('next-zman-countdown'),
     nextZmanTime: document.getElementById('next-zman-time'),
     
+    // Shabbat section elements
+    shabbatParasha: document.getElementById('shabbat-parasha'),
+    shabbatTags: document.getElementById('shabbat-tags'),
+    shabbatDate: document.getElementById('shabbat-date'),
+    shabbatTimes: document.getElementById('shabbat-times'),
+    
     // Location Modal elements
     locationModal: document.getElementById('location-modal'),
     locationOverlay: document.getElementById('location-overlay'),
@@ -66,6 +72,7 @@ const elements = {
 
 // App State
 let currentZmanim = null;
+let shabbatRequestId = 0;
 let countdownInterval = null;
 
 /**
@@ -233,6 +240,37 @@ function updateDateUI() {
 }
 
 /**
+ * Format a date as a Hebrew date string with Hebrew letters
+ * Example: "י׳ בטבת התשפ״ו"
+ * @param {Date} date
+ * @returns {string} Hebrew date, or empty string on failure
+ */
+function getHebrewDateString(date) {
+    try {
+        // Get Hebrew date components using Intl
+        const hebrewCalendar = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        
+        const parts = hebrewCalendar.formatToParts(date);
+        const day = parseInt(parts.find(p => p.type === 'day')?.value || '1');
+        const month = parts.find(p => p.type === 'month')?.value || '';
+        const year = parseInt(parts.find(p => p.type === 'year')?.value || '5786');
+        
+        // Convert to Hebrew letters
+        const hebrewDay = toHebrewNumber(day);
+        const hebrewYear = toHebrewNumber(year);
+        
+        return `${hebrewDay} ב${month} ${hebrewYear}`;
+    } catch (e) {
+        console.error('Error formatting Hebrew date:', e);
+        return '';
+    }
+}
+
+/**
  * Display Hebrew and Gregorian dates
  */
 function displayDates() {
@@ -248,29 +286,7 @@ function displayDates() {
     elements.gregorianDate.textContent = now.toLocaleDateString('he-IL', gregorianOptions);
     
     // Hebrew date with Hebrew letters
-    try {
-        // Get Hebrew date components using Intl
-        const hebrewCalendar = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        });
-        
-        const parts = hebrewCalendar.formatToParts(now);
-        const day = parseInt(parts.find(p => p.type === 'day')?.value || '1');
-        const month = parts.find(p => p.type === 'month')?.value || '';
-        const year = parseInt(parts.find(p => p.type === 'year')?.value || '5786');
-        
-        // Convert to Hebrew letters
-        const hebrewDay = toHebrewNumber(day);
-        const hebrewYear = toHebrewNumber(year);
-        
-        // Format: "י׳ בטבת התשפ״ו"
-        elements.hebrewDate.textContent = `${hebrewDay} ב${month} ${hebrewYear}`;
-    } catch (e) {
-        console.error('Error formatting Hebrew date:', e);
-        elements.hebrewDate.textContent = '';
-    }
+    elements.hebrewDate.textContent = getHebrewDateString(now);
     
     // Custom date indicator
     if (selectedDate) {
@@ -318,11 +334,116 @@ async function loadZmanim(useCache = false) {
         
         console.log('✅ Zmanim loaded successfully', zmanim);
         
+        // Load Shabbat times (independently - a failure here must not hide the zmanim)
+        loadShabbatTimes(location);
+        
     } catch (error) {
         console.error('❌ Error loading zmanim:', error);
         hideLoading();
         showError(error.message || 'שגיאה בטעינת הזמנים');
     }
+}
+
+/**
+ * Load and display the upcoming Shabbat times
+ * @param {Object} location - Location data (latitude, longitude, timezone)
+ */
+async function loadShabbatTimes(location) {
+    const requestId = ++shabbatRequestId;
+    showShabbatLoading();
+    
+    try {
+        const shabbat = await fetchShabbatTimes(
+            location.latitude,
+            location.longitude,
+            location.timezone,
+            selectedDate
+        );
+        
+        // Ignore stale responses (e.g. the user changed the date meanwhile)
+        if (requestId !== shabbatRequestId) return;
+        
+        displayShabbatTimes(shabbat);
+        
+        console.log('✅ Shabbat times loaded successfully', shabbat);
+        
+    } catch (error) {
+        if (requestId !== shabbatRequestId) return;
+        
+        console.error('❌ Error loading Shabbat times:', error);
+        elements.shabbatParasha.textContent = 'זמני שבת';
+        elements.shabbatTags.innerHTML = '';
+        elements.shabbatDate.textContent = '';
+        elements.shabbatTimes.innerHTML = `
+            <div class="shabbat-error">
+                <span>⚠️</span>
+                <span>${error.message || 'שגיאה בטעינת זמני השבת'}</span>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Show the loading state inside the Shabbat section
+ */
+function showShabbatLoading() {
+    elements.shabbatParasha.textContent = 'טוען...';
+    elements.shabbatTags.innerHTML = '';
+    elements.shabbatDate.textContent = '';
+    elements.shabbatTimes.innerHTML = `
+        <div class="shabbat-loading">
+            <div class="spinner spinner-small"></div>
+            <span>טוען זמני שבת...</span>
+        </div>
+    `;
+}
+
+/**
+ * Render the Shabbat section content
+ * @param {Object} shabbat - Shabbat data from fetchShabbatTimes
+ */
+function displayShabbatTimes(shabbat) {
+    elements.shabbatParasha.textContent = shabbat.parasha;
+    
+    elements.shabbatTags.innerHTML = (shabbat.tags || [])
+        .map(tag => `<span class="shabbat-tag">${tag}</span>`)
+        .join('');
+    
+    // Date line: "ו׳ בחשון התשפ״ז · 17.10.2026"
+    const saturday = new Date(shabbat.saturdayDate);
+    const gregorian = saturday.toLocaleDateString('he-IL', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+    elements.shabbatDate.textContent = `${getHebrewDateString(saturday)} · ${gregorian}`;
+    
+    elements.shabbatTimes.innerHTML = shabbat.times.map(zman => {
+        const isHighlight = zman.key === 'candleLighting' || zman.key === 'havdalah';
+        return `
+            <div class="shabbat-time-row${isHighlight ? ' highlight' : ''}" data-key="${zman.key}">
+                <span class="shabbat-time-icon">${getShabbatIcon(zman.key)}</span>
+                <span class="shabbat-time-name">
+                    ${zman.hebrew}
+                    ${zman.note ? `<span class="shabbat-time-note">${zman.note}</span>` : ''}
+                </span>
+                <span class="shabbat-time-value">${zman.formatted}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Get icon for a Shabbat time
+ */
+function getShabbatIcon(key) {
+    const icons = {
+        candleLighting: '🕯️',
+        candleLighting20: '🕯️',
+        havdalah: '✨',
+        havdalahRT: '🌟'
+    };
+    return icons[key] || '⏰';
 }
 
 /**
@@ -345,9 +466,6 @@ function displayZmanim(zmanim) {
         if (zman.key === 'sunrise') cardClass += ' sunrise';
         if (zman.key === 'sunset') cardClass += ' sunset';
         if (zman.key === 'tzeit') cardClass += ' tzeit';
-        if (zman.key === 'candleLighting') cardClass += ' shabbat candle-lighting';
-        if (zman.key === 'havdalah') cardClass += ' shabbat havdalah';
-        if (zman.key === 'havdalahRT') cardClass += ' shabbat havdalah-rt';
         if (!isVisible) cardClass += ' filtered-out';
         
         return `
@@ -377,9 +495,6 @@ function getZmanIcon(key) {
         sofZmanShmaGRA: '📖',
         sofZmanShmaMGA: '📖',
         sofZmanTfillaGRA: '🙏',
-        candleLighting: '🕯️',
-        havdalah: '✨',
-        havdalahRT: '✨',
         sofZmanTfillaMGA: '🙏',
         chatzot: '🕛',
         minchaGedola: '🕐',

@@ -3,8 +3,8 @@
  * Enables offline functionality and caching
  */
 
-const CACHE_NAME = 'zmaney-hayom-v1';
-const STATIC_CACHE = 'static-v1';
+const CACHE_NAME = 'zmaney-hayom-v2';
+const STATIC_CACHE = 'static-v2';
 
 // Files to cache for offline use
 const STATIC_FILES = [
@@ -14,6 +14,8 @@ const STATIC_FILES = [
     '/js/app.js',
     '/js/api.js',
     '/js/location.js',
+    '/js/geocoding.js',
+    '/js/settings.js',
     '/manifest.json',
     '/icons/icon-192.png',
     '/icons/icon-512.png'
