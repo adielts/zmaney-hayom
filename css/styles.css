@@ -701,28 +701,10 @@ body::before {
   z-index: 1;
 }
 
-.time-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--color-gold), var(--color-gold-light));
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-  z-index: 2;
-}
-
 .time-card:hover,
 .time-card:focus-within {
   transform: translateY(-4px) scale(1.02);
   box-shadow: var(--shadow-xl), var(--panel-glow);
-}
-
-.time-card:hover::before,
-.time-card.active::before {
-  opacity: 1;
 }
 
 .time-card.active {
@@ -777,7 +759,6 @@ body::before {
 
 .time-card-passed .time-value,
 .time-card-passed .time-card-value {
-  text-decoration: line-through;
   color: var(--text-on-panel-faint);
 }
 
@@ -840,10 +821,6 @@ body::before {
 
 .time-card.tzeit .time-icon {
   filter: drop-shadow(0 0 8px rgba(255, 215, 100, 0.6));
-}
-
-.time-card.tzeit::before {
-  background: linear-gradient(90deg, rgba(255, 215, 100, 0.6), rgba(200, 180, 255, 0.6));
 }
 
 /* ============================================

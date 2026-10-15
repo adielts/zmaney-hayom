@@ -9,7 +9,7 @@ import {
     clearLocationCache, 
     onPermissionChange 
 } from './location.js';
-import { initSettingsPanel, isZmanVisible, getViewMode, setViewMode } from './settings.js';
+import { initSettingsPanel, isZmanVisible, getViewMode, setViewMode, getThemePreference } from './settings.js';
 import { 
     searchLocations, 
     getTimezoneFromCoords,
@@ -125,6 +125,8 @@ function applyTheme(theme) {
         const themeColor = document.querySelector('meta[name="theme-color"]');
         if (themeColor) themeColor.setAttribute('content', THEME_COLORS[theme]);
         
+        window.dispatchEvent(new CustomEvent('themeApplied', { detail: { theme } }));
+        
         console.log(`🎨 Theme switched to ${theme}`);
     }
     
@@ -140,9 +142,17 @@ function applyTheme(theme) {
 }
 
 /**
- * Re-evaluate the theme against the currently displayed day and time
+ * Re-evaluate the theme: a manual choice from the settings wins,
+ * otherwise the theme follows the zmanim of the displayed day
  */
 function updateTheme() {
+    const preference = getThemePreference();
+    
+    if (!preference.auto) {
+        applyTheme(preference.theme);
+        return;
+    }
+    
     applyTheme(resolveThemeForTime(currentZmanim, getCurrentDate()));
 }
 
@@ -171,6 +181,11 @@ async function init() {
     // Listen for filter changes
     window.addEventListener('zmanimFiltered', () => {
         updateNextZman();
+    });
+    
+    // Apply the theme as soon as it is changed in the settings
+    window.addEventListener('themePreferenceChanged', () => {
+        updateTheme();
     });
     
     // Display current date

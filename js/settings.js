@@ -8,6 +8,9 @@ const STORAGE_KEY = 'zmaneyHayom_settings';
 // Default settings - all zmanim visible
 const DEFAULT_SETTINGS = {
     viewMode: 'grid',
+    // Theme follows the zmanim until the user picks a theme by hand
+    themeAuto: true,
+    manualTheme: 'dark',
     visibleZmanim: {
         dawn: true,
         tallitTefillin: true,
@@ -134,6 +137,34 @@ export function getZmanimMetadata() {
 }
 
 /**
+ * Read the user's theme preference
+ * @returns {{auto: boolean, theme: 'light'|'dark'}} `auto` follows the zmanim,
+ *          otherwise `theme` is the manually chosen one
+ */
+export function getThemePreference() {
+    const settings = loadSettings();
+    return {
+        auto: settings.themeAuto !== false,
+        theme: settings.manualTheme === 'light' ? 'light' : 'dark'
+    };
+}
+
+/**
+ * Persist the theme preference and let the app re-apply it
+ * @param {{auto: boolean, theme: 'light'|'dark'}} preference
+ */
+export function setThemePreference({ auto, theme }) {
+    const settings = loadSettings();
+    settings.themeAuto = auto !== false;
+    settings.manualTheme = theme === 'light' ? 'light' : 'dark';
+    saveSettings(settings);
+    
+    window.dispatchEvent(new CustomEvent('themePreferenceChanged', {
+        detail: { auto: settings.themeAuto, theme: settings.manualTheme }
+    }));
+}
+
+/**
  * Apply filters to zmanim cards
  */
 export function applyFilters() {
@@ -200,6 +231,60 @@ function renderToggles() {
 }
 
 /**
+ * Wire up the dark mode / automatic theme switches
+ */
+function initAppearanceToggles() {
+    const darkToggle = document.getElementById('dark-mode-toggle');
+    const autoToggle = document.getElementById('auto-theme-toggle');
+    if (!darkToggle || !autoToggle) return;
+    
+    const isDarkNow = () => document.documentElement.dataset.theme === 'dark';
+    
+    const setToggle = (toggle, on) => {
+        toggle.classList.toggle('active', on);
+        toggle.setAttribute('aria-checked', String(on));
+    };
+    
+    // In automatic mode the dark switch mirrors the theme the zmanim chose
+    const refresh = () => {
+        const preference = getThemePreference();
+        setToggle(darkToggle, preference.auto ? isDarkNow() : preference.theme === 'dark');
+        setToggle(autoToggle, preference.auto);
+    };
+    
+    darkToggle.addEventListener('click', () => {
+        // Picking a theme by hand turns the automatic mode off
+        setThemePreference({
+            auto: false,
+            theme: darkToggle.classList.contains('active') ? 'light' : 'dark'
+        });
+        refresh();
+    });
+    
+    autoToggle.addEventListener('click', () => {
+        const auto = !autoToggle.classList.contains('active');
+        setThemePreference({
+            auto,
+            theme: auto ? getThemePreference().theme : (isDarkNow() ? 'dark' : 'light')
+        });
+        refresh();
+    });
+    
+    [darkToggle, autoToggle].forEach(toggle => {
+        toggle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggle.click();
+            }
+        });
+    });
+    
+    // Keep the switches in sync when the zmanim flip the theme on their own
+    window.addEventListener('themeApplied', refresh);
+    refresh();
+}
+
+/**
  * Initialize settings panel UI
  */
 export function initSettingsPanel() {
@@ -217,6 +302,7 @@ export function initSettingsPanel() {
 
     // Generate toggle switches
     renderToggles();
+    initAppearanceToggles();
 
     // Open settings
     settingsBtn.addEventListener('click', () => {

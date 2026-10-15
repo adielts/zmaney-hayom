@@ -3,8 +3,8 @@
  * Enables offline functionality and caching
  */
 
-const CACHE_NAME = 'zmaney-hayom-v6';
-const STATIC_CACHE = 'static-v6';
+const CACHE_NAME = 'zmaney-hayom-v7';
+const STATIC_CACHE = 'static-v7';
 
 // Files to cache for offline use
 const STATIC_FILES = [

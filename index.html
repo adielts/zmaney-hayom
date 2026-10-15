@@ -176,6 +176,31 @@
                 <button class="modal-close" id="settings-close" aria-label="סגור">✕</button>
             </div>
             <div class="modal-content">
+                <p class="settings-description">מראה:</p>
+
+                <div class="settings-group" id="appearance-toggles">
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <span class="settings-item-icon">🌙</span>
+                            <div class="settings-item-text">
+                                <span class="settings-item-name">מצב כהה</span>
+                                <span class="settings-item-english">Dark mode</span>
+                            </div>
+                        </div>
+                        <div class="toggle-switch" id="dark-mode-toggle" role="switch" aria-checked="false" aria-label="מצב כהה" tabindex="0"></div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <span class="settings-item-icon">🕐</span>
+                            <div class="settings-item-text">
+                                <span class="settings-item-name">אוטומטי לפי הזמנים</span>
+                                <span class="settings-item-english">Follow the zmanim</span>
+                            </div>
+                        </div>
+                        <div class="toggle-switch" id="auto-theme-toggle" role="switch" aria-checked="true" aria-label="אוטומטי לפי הזמנים" tabindex="0"></div>
+                    </div>
+                </div>
+
                 <p class="settings-description">בחר אילו זמנים להציג:</p>
                 
                 <div class="settings-group" id="zmanim-toggles">
