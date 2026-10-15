@@ -183,6 +183,19 @@
   --shadow-gold: 0 4px 18px rgba(184, 146, 62, 0.45);
 }
 
+/* On a light background the gold glow smears the text and the grayscale
+   antialiasing thins it out, so both are turned off for the light theme */
+:root[data-theme="light"] body {
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}
+
+:root[data-theme="light"] .app-title,
+:root[data-theme="light"] .shabbat-parasha,
+:root[data-theme="light"] .next-zman-countdown {
+  text-shadow: none;
+}
+
 /* ============================================
    Reset & Base Styles
    ============================================ */
@@ -312,17 +325,24 @@ body::before {
 .app-title {
   font-family: var(--font-family-hebrew);
   font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   margin-bottom: 0;
   letter-spacing: 0.5px;
   color: var(--accent-strong);
   text-shadow: 0 2px 12px rgba(212, 168, 87, 0.35);
 }
 
+/* Clock icon - drawn with the title colour so it always matches the text */
 .app-title-icon {
-  display: inline-block;
-  margin-left: var(--space-sm);
-  font-size: var(--font-size-lg);
+  width: 1.05em;
+  height: 1.05em;
+  margin-left: var(--space-xs);
+  vertical-align: -0.15em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .app-subtitle {
