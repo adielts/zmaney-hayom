@@ -934,6 +934,17 @@ async function registerServiceWorker() {
             const registration = await navigator.serviceWorker.register('/sw.js');
             console.log('✅ ServiceWorker registered:', registration.scope);
             
+            // A new worker taking control means newer files are available, so the
+            // page is reloaded once to drop the markup/styles of the old version
+            if (navigator.serviceWorker.controller) {
+                let reloading = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (reloading) return;
+                    reloading = true;
+                    window.location.reload();
+                });
+            }
+            
             // Check for a newer version on every launch so updates are picked up
             registration.update();
         } catch (error) {

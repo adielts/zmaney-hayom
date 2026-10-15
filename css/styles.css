@@ -190,7 +190,6 @@
   -moz-osx-font-smoothing: auto;
 }
 
-:root[data-theme="light"] .app-title,
 :root[data-theme="light"] .shabbat-parasha,
 :root[data-theme="light"] .next-zman-countdown {
   text-shadow: none;
@@ -328,8 +327,10 @@ body::before {
   font-weight: var(--font-weight-bold);
   margin-bottom: 0;
   letter-spacing: 0.5px;
+  /* No text-shadow: the gold glow smeared the letters and made the title
+     look blurred and washed out in both themes */
   color: var(--accent-strong);
-  text-shadow: 0 2px 12px rgba(212, 168, 87, 0.35);
+  text-shadow: none;
 }
 
 /* Clock icon - drawn with the title colour so it always matches the text */
