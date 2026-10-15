@@ -12,12 +12,12 @@ A beautiful, mobile-first Progressive Web App (PWA) for displaying Jewish prayer
   only, and as long as the permission stays valid the app never asks again
 - ⏰ **10 daily Zmanim** from Dawn to Nightfall, always sorted by time (earliest first)
 - 🔀 **Grid / list view switch** - one tap to move between cards and a compact list
+- 🌗 **Automatic light / dark theme** - light from עלות השחר, dark from צאת הכוכבים
 - 🕯️ **Shabbat times section** with the weekly Parasha, candle lighting & Havdalah
 - 🕐 **Live countdown** to next prayer time
 - 📅 **Hebrew & Gregorian dates**
 - 🌍 **RTL Hebrew interface**
 - 📱 **iPhone optimized** with safe-area support
-- 🌙 **Elegant dark theme** across the whole app
 - 💾 **Offline capable** with service worker
 - 🎨 **Elegant design** with rounded edges and smooth animations
 - ⚡ **Fast & lightweight** - Pure vanilla JavaScript
@@ -146,10 +146,9 @@ ZmaneyHaiom/
 
 ## 🎨 Design Features
 
-The whole app shares a single "royal navy & gold" design language, taken from
-the Shabbat card: every section (location, date, countdown, zmanim cards and
-the modals) is rendered as a `.panel` with the same navy gradient, gold frame
-and thin inner border.
+The whole app shares a single design language, taken from the Shabbat card:
+every section (location, date, countdown, zmanim cards and the modals) is
+rendered as a `.panel` with the same gradient, gold frame and thin inner border.
 
 - **Elegant rounded corners** throughout the app
 - **Gold & deep blue** color scheme with a decorative inner frame
@@ -158,6 +157,22 @@ and thin inner border.
 - **Responsive grid** (1-3 columns based on screen size)
 - **Gradient backgrounds** and shadows
 - **Hover effects** with scale transforms
+
+## 🌗 Automatic Theme
+
+The app follows the day itself instead of the system setting:
+
+- **עלות השחר → צאת הכוכבים** - a light "parchment & gold" theme
+- **צאת הכוכבים → עלות השחר** - the dark "royal navy & gold" theme
+
+The theme is recalculated every second against the zmanim of the displayed day,
+so it flips the moment a boundary is crossed while the app is open, and the
+browser/PWA theme color follows it. The last theme is remembered so the next
+launch starts with the right one and no flash.
+
+Both themes are defined with the same CSS variables (`--panel-bg`,
+`--text-on-panel`, `--accent-strong`, ...), overridden under
+`:root[data-theme="light"]` in [css/styles.css](css/styles.css).
 
 ## 📍 Location & Permissions
 

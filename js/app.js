@@ -80,6 +80,71 @@ const elements = {
 let currentZmanim = null;
 let shabbatRequestId = 0;
 let countdownInterval = null;
+let currentTheme = document.documentElement.dataset.theme || null;
+let persistedTheme = (() => {
+    try {
+        return localStorage.getItem('zmaneyHayom_theme');
+    } catch (error) {
+        return null;
+    }
+})();
+
+// ============================================
+// THEME - follows the zmanim of the day
+// ============================================
+const THEME_STORAGE_KEY = 'zmaneyHayom_theme';
+const THEME_COLORS = { light: '#f1ece1', dark: '#0f2442' };
+
+/**
+ * Decide which theme fits a given moment:
+ * light between עלות השחר and צאת הכוכבים, dark during the night
+ * @param {Object} zmanim - Zmanim object from fetchZmanim
+ * @param {Date} now - The moment to evaluate
+ * @returns {'light'|'dark'|null} The theme, or null when it cannot be decided
+ */
+function resolveThemeForTime(zmanim, now) {
+    if (!zmanim?.dawn?.time || !zmanim?.tzeit?.time) return null;
+    
+    const dawn = new Date(zmanim.dawn.time);
+    const tzeit = new Date(zmanim.tzeit.time);
+    
+    return now >= dawn && now < tzeit ? 'light' : 'dark';
+}
+
+/**
+ * Apply a theme to the document and remember it for the next launch
+ * @param {'light'|'dark'|null} theme
+ */
+function applyTheme(theme) {
+    if (!theme) return;
+    
+    if (theme !== currentTheme) {
+        currentTheme = theme;
+        document.documentElement.dataset.theme = theme;
+        
+        const themeColor = document.querySelector('meta[name="theme-color"]');
+        if (themeColor) themeColor.setAttribute('content', THEME_COLORS[theme]);
+        
+        console.log(`🎨 Theme switched to ${theme}`);
+    }
+    
+    // Remember the resolved theme so the next launch starts with it
+    if (theme !== persistedTheme) {
+        persistedTheme = theme;
+        try {
+            localStorage.setItem(THEME_STORAGE_KEY, theme);
+        } catch (error) {
+            console.warn('Failed to persist theme:', error);
+        }
+    }
+}
+
+/**
+ * Re-evaluate the theme against the currently displayed day and time
+ */
+function updateTheme() {
+    applyTheme(resolveThemeForTime(currentZmanim, getCurrentDate()));
+}
 
 /**
  * Initialize the application
@@ -372,6 +437,7 @@ async function loadZmanim(options = {}) {
         currentZmanim = zmanim;
         displayZmanim(zmanim);
         updateNextZman();
+        updateTheme();
         
         hideLoading();
         showZmanim();
@@ -622,12 +688,16 @@ function updateNextZman() {
 
 /**
  * Start countdown timer
+ * The same tick also flips the theme when a zman boundary is crossed
  */
 function startCountdown() {
     if (countdownInterval) {
         clearInterval(countdownInterval);
     }
-    countdownInterval = setInterval(updateNextZman, 1000);
+    countdownInterval = setInterval(() => {
+        updateNextZman();
+        updateTheme();
+    }, 1000);
 }
 
 /**
@@ -863,6 +933,9 @@ async function registerServiceWorker() {
         try {
             const registration = await navigator.serviceWorker.register('/sw.js');
             console.log('✅ ServiceWorker registered:', registration.scope);
+            
+            // Check for a newer version on every launch so updates are picked up
+            registration.update();
         } catch (error) {
             console.log('⚠️ ServiceWorker registration failed:', error);
         }
