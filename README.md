@@ -15,6 +15,7 @@ A beautiful, mobile-first Progressive Web App (PWA) for displaying Jewish prayer
 - 🌗 **Automatic light / dark theme** - light from עלות השחר, dark from צאת הכוכבים
 - 🕯️ **Shabbat times section** with the weekly Parasha, candle lighting & Havdalah
 - 🕐 **Live countdown** to next prayer time
+- 🔜 **Reminder bell** *(coming soon - not enabled yet)*: remind me 5 / 2 / 1 minutes before, or exactly at, the next zman
 - 📅 **Hebrew & Gregorian dates**
 - 🌍 **RTL Hebrew interface**
 - 📱 **iPhone optimized** with safe-area support
@@ -138,6 +139,7 @@ ZmaneyHaiom/
 │   ├── api.js         # Hebcal API integration
 │   ├── geocoding.js   # Location search & favorites
 │   ├── settings.js    # Display preferences (filters, view mode)
+│   ├── reminders.js   # Reminder bell for the next zman (not enabled yet)
 │   └── location.js    # Geolocation service
 └── icons/
     ├── icon-192.svg   # App icon (192x192)
@@ -186,6 +188,20 @@ The geolocation prompt is only triggered once:
   not used at all
 - The prompt is only shown again following an explicit user action: the refresh
   button or "השתמש במיקום הנוכחי"
+
+## 🔔 Reminder Bell (coming soon)
+
+> **Not enabled yet.** The feature is built but hidden from users. To turn it on, set
+> `REMINDERS_ENABLED = true` in [js/reminders.js](js/reminders.js).
+
+Tap the 🔔 at the bottom of the next zman box and pick when to be reminded:
+5 / 2 / 1 minutes before, or exactly at the zman. The reminder is for that zman only -
+it fires once and is cleared. Tap the bell again to change or cancel it.
+
+- The reminder fires while the app is open (the web can't schedule notifications for later):
+  an in-app banner when the app is in front, a system notification when it is in the background
+- On iPhone, system notifications require adding the app to the Home Screen
+- Moments that already passed can't be picked; a reminder missed while the app was closed is dropped
 
 ## 🔒 Privacy
 

@@ -10,6 +10,7 @@ import {
     onPermissionChange 
 } from './location.js';
 import { initSettingsPanel, isZmanVisible, getViewMode, setViewMode, getThemePreference } from './settings.js';
+import { initReminderBell, updateReminderBell, checkReminder } from './reminders.js';
 import { 
     searchLocations, 
     getTimezoneFromCoords,
@@ -171,6 +172,9 @@ async function init() {
     
     // Initialize settings panel
     initSettingsPanel();
+    
+    // Initialize the reminder bell on the next zman box
+    initReminderBell();
     
     // Initialize grid/list view toggle
     initViewToggle();
@@ -699,6 +703,9 @@ function updateNextZman() {
     } else {
         elements.nextZman.style.display = 'none';
     }
+    
+    // Reminders are for today only - no bell while another date is shown
+    updateReminderBell(nextZman && !selectedDate ? nextZman : null);
 }
 
 /**
@@ -712,6 +719,7 @@ function startCountdown() {
     countdownInterval = setInterval(() => {
         updateNextZman();
         updateTheme();
+        checkReminder();
     }, 1000);
 }
 

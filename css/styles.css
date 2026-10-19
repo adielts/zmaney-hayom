@@ -2190,3 +2190,162 @@ input, select, textarea {
     bottom: calc(var(--space-lg) + env(safe-area-inset-bottom));
   }
 }
+
+/* ============================================
+   Next Zman Reminder - bell + small menu
+   ============================================ */
+.reminder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: var(--space-md);
+}
+
+.reminder[hidden],
+.reminder-menu[hidden],
+.reminder-label[hidden] {
+  display: none;
+}
+
+.reminder-bell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-width: 48px;
+  height: 48px;
+  padding: 0 var(--space-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-lg);
+  color: var(--text-on-panel);
+  background: var(--surface-soft);
+  border: 1px solid rgba(212, 168, 87, 0.55);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reminder-bell:hover {
+  background: var(--surface-soft-hover);
+  border-color: var(--color-gold);
+}
+
+.reminder-bell:focus-visible,
+.reminder-menu button:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.reminder-bell.active {
+  color: var(--color-primary-dark);
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold));
+  border-color: transparent;
+  box-shadow: var(--shadow-gold);
+}
+
+.reminder-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.reminder-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  max-width: 240px;
+  margin-top: var(--space-sm);
+  padding: var(--space-xs);
+  background: var(--surface-soft);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+}
+
+.reminder-menu button {
+  min-height: 44px;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  color: var(--text-on-panel);
+  text-align: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.reminder-menu button:hover:not(:disabled) {
+  background: var(--surface-soft-hover);
+}
+
+.reminder-menu button[aria-checked="true"] {
+  color: var(--accent-strong);
+  font-weight: var(--font-weight-bold);
+}
+
+.reminder-menu button[aria-checked="true"]::before {
+  content: '✓ ';
+  content: '✓ ' / '';
+}
+
+.reminder-menu button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.reminder-menu .reminder-menu-off {
+  color: var(--text-on-panel-muted);
+  font-size: var(--font-size-sm);
+  border-top: 1px solid var(--surface-border);
+  border-radius: 0;
+}
+
+.reminder-menu-note {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+  color: var(--text-on-panel-muted);
+}
+
+/* In-app reminder banner */
+.reminder-banner {
+  position: fixed;
+  top: calc(var(--safe-area-top) + var(--space-sm));
+  left: 50%;
+  z-index: calc(var(--z-toast) + 1);
+  width: min(440px, calc(100% - 2 * var(--space-md)));
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  color: var(--text-on-panel);
+  background: var(--panel-bg);
+  border: 2px solid var(--color-gold);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl), var(--panel-glow);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -120%);
+  transition: transform var(--transition-slow), opacity var(--transition-slow), visibility var(--transition-slow);
+}
+
+.reminder-banner.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+.reminder-banner > span:first-child {
+  font-size: var(--font-size-2xl);
+}
+
+.reminder-banner > span:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.reminder-banner strong {
+  color: var(--accent-strong);
+}

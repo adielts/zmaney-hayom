@@ -3,8 +3,8 @@
  * Enables offline functionality and caching
  */
 
-const CACHE_NAME = 'zmaney-hayom-v7';
-const STATIC_CACHE = 'static-v7';
+const CACHE_NAME = 'zmaney-hayom-v8';
+const STATIC_CACHE = 'static-v8';
 
 // Files to cache for offline use
 const STATIC_FILES = [
@@ -16,6 +16,7 @@ const STATIC_FILES = [
     '/js/location.js',
     '/js/geocoding.js',
     '/js/settings.js',
+    '/js/reminders.js',
     '/manifest.json',
     '/icons/icon-192.png',
     '/icons/icon-512.png'
@@ -207,4 +208,17 @@ self.addEventListener('message', (event) => {
     if (event.data === 'skipWaiting') {
         self.skipWaiting();
     }
+});
+
+// Tapping the reminder notification brings the app to the front (or opens it)
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then((clients) => {
+                const client = clients.find((c) => c.url.startsWith(self.registration.scope));
+                return client ? client.focus() : self.clients.openWindow(self.registration.scope);
+            })
+    );
 });
