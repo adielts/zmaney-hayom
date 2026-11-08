@@ -11,6 +11,7 @@ import {
 } from './location.js';
 import { initSettingsPanel, isZmanVisible, getViewMode, setViewMode, getThemePreference } from './settings.js';
 import { initReminderBell, updateReminderBell, checkReminder } from './reminders.js';
+import { initCompass, setCompassLocation } from './compass.js';
 import { 
     searchLocations, 
     getTimezoneFromCoords,
@@ -181,6 +182,9 @@ async function init() {
     
     // Initialize location picker
     initLocationPicker();
+    
+    // Initialize the prayer direction compass
+    initCompass();
     
     // Listen for filter changes
     window.addEventListener('zmanimFiltered', () => {
@@ -435,6 +439,7 @@ async function loadZmanim(options = {}) {
     try {
         const location = await resolveLocation(options);
         elements.locationName.textContent = location.cityName;
+        setCompassLocation(location);
         
         // Show a hint if using default location
         if (location.isDefault) {

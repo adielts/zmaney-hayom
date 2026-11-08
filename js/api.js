@@ -643,4 +643,4 @@ function getZmanimList(zmanim) {
 }
 
 // Export functions for use in other modules
-export { fetchZmanim, fetchShabbatTimes, formatTime, getZmanimList };
+export { fetchZmanim, fetchShabbatTimes, formatTime, getZmanimList, isJerusalemArea };

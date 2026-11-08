@@ -175,6 +175,56 @@
             ⚙️
         </button>
 
+        <!-- Prayer Direction Button (Fixed Position) -->
+        <button type="button" class="btn-compass-fab" id="compass-btn" aria-haspopup="dialog" aria-controls="compass-modal" aria-expanded="false">
+            <svg class="compass-fab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"></circle><path class="compass-fab-needle" d="M15.6 8.4l-2.2 5-5 2.2 2.2-5z"></path></svg>
+            <span>כיוון תפילה</span>
+        </button>
+
+        <!-- Prayer Direction Modal -->
+        <div class="modal-overlay" id="compass-overlay"></div>
+        <div class="modal compass-modal" id="compass-modal" role="dialog" aria-modal="true" aria-labelledby="compass-title">
+            <div class="modal-handle"></div>
+            <div class="modal-header">
+                <h2 class="modal-title" id="compass-title">🧭 כיוון תפילה</h2>
+                <button class="modal-close" id="compass-close" aria-label="סגור">✕</button>
+            </div>
+            <p class="compass-subtitle" id="compass-subtitle"></p>
+            <div class="modal-content">
+                <div class="compass-permission" id="compass-permission" hidden>
+                    <svg class="compass-permission-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"></circle><path d="M15.6 8.4l-2.2 5-5 2.2 2.2-5z"></path></svg>
+                    <p class="compass-text">כדי להראות לך לאן לפנות בזמן התפילה,<br>האפליקציה צריכה גישה למצפן של המכשיר.<br><small>המידע לא נשמר ולא נשלח לשום מקום.</small></p>
+                    <button type="button" class="btn btn-gold compass-wide-btn" id="compass-permission-btn">אפשר גישה למצפן</button>
+                    <button type="button" class="compass-link-btn" id="compass-skip-btn">הצג כיוון ללא מצפן</button>
+                </div>
+
+                <div class="compass-near" id="compass-near" hidden>
+                    <div class="compass-near-art" id="compass-near-art"></div>
+                    <p class="compass-text">אתה נמצא במרחק פחות מ-500 מ׳ מהכותל.<br><strong>פנה אל הכותל / אל הר הבית.</strong><br>בטווח זה מצפן אינו מדויק מספיק.</p>
+                </div>
+
+                <div class="compass-main" id="compass-main" hidden>
+                    <div class="compass-method" id="compass-method" role="group" aria-label="שיטת חישוב הכיוון" hidden>
+                        <button type="button" class="compass-method-btn" data-method="greatCircle" aria-pressed="true">הדרך הקצרה ביותר</button>
+                        <button type="button" class="compass-method-btn" data-method="rhumb" aria-pressed="false">מנהג: מזרח</button>
+                    </div>
+                    <div class="compass-dial" id="compass-dial"></div>
+                    <div class="compass-readout">
+                        <div class="compass-deg" id="compass-deg"></div>
+                        <div class="compass-dir" id="compass-dir"></div>
+                        <p class="compass-hint" id="compass-hint"></p>
+                        <p class="sr-only" id="compass-status" aria-live="polite"></p>
+                    </div>
+                </div>
+
+                <div class="compass-meta">
+                    <span>📍 <b id="compass-place"></b></span>
+                    <span>מרחק: <b id="compass-distance"></b></span>
+                </div>
+                <p class="compass-note">יש להרחיק את הטלפון ממתכות ומגנטים · לכיול – הזז את הטלפון בתנועת 8<br>הכיוון להלכה בלבד – יש להתייעץ עם רב</p>
+            </div>
+        </div>
+
         <!-- Settings Modal -->
         <div class="modal-overlay" id="settings-overlay"></div>
         <div class="modal" id="settings-modal">

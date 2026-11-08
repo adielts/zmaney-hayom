@@ -1186,6 +1186,319 @@ body::before {
   box-shadow: var(--shadow-lg), 0 0 0 4px rgba(212, 168, 87, 0.12);
 }
 
+/* ============================================
+   Prayer Direction (Tfila Compass)
+   ============================================ */
+.btn-compass-fab {
+  position: fixed;
+  bottom: calc(var(--space-lg) + var(--safe-area-bottom));
+  right: var(--space-lg);
+  z-index: var(--z-sticky);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  height: 48px;
+  padding: 0 18px 0 20px;
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary-dark);
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold));
+  border: 2px solid var(--color-gold-dark);
+  border-radius: 999px;
+  box-shadow: var(--shadow-lg), 0 0 0 4px rgba(212, 168, 87, 0.18);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-compass-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl), var(--shadow-gold);
+}
+
+.btn-compass-fab:focus-visible {
+  outline: 2px solid var(--color-primary-dark);
+  outline-offset: 3px;
+}
+
+.compass-fab-icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.compass-fab-needle {
+  fill: currentColor;
+  stroke: none;
+}
+
+.compass-modal .modal-content {
+  max-height: none;
+  overflow: visible;
+}
+
+.compass-modal [hidden] {
+  display: none !important;
+}
+
+.compass-subtitle {
+  margin-top: calc(-1 * var(--space-md));
+  margin-bottom: var(--space-md);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--text-on-panel-muted);
+}
+
+.compass-main,
+.compass-permission,
+.compass-near {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.compass-method {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: var(--space-sm);
+  background: var(--surface-soft);
+  border: 1px solid rgba(212, 168, 87, 0.35);
+  border-radius: var(--radius-xl);
+}
+
+.compass-method-btn {
+  padding: 6px var(--space-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-on-panel-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+}
+
+.compass-method-btn.active {
+  color: var(--color-primary-dark);
+  font-weight: var(--font-weight-semibold);
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold));
+}
+
+.compass-method-btn:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.compass-dial {
+  width: min(280px, 72vw);
+  aspect-ratio: 1;
+  margin: var(--space-xs) 0 var(--space-sm);
+}
+
+.compass-dial svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.dial-face {
+  fill: var(--surface-soft);
+  stroke: var(--color-gold);
+  stroke-width: 2;
+  transition: stroke var(--transition-fast);
+}
+
+.dial-inner {
+  fill: none;
+  stroke: rgba(212, 168, 87, 0.25);
+}
+
+.dial-tick {
+  stroke: rgba(212, 168, 87, 0.5);
+  stroke-width: 1;
+}
+
+.dial-tick-major {
+  stroke: var(--color-gold);
+  stroke-width: 2;
+}
+
+.dial-label text {
+  fill: var(--text-on-panel);
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: var(--font-weight-bold);
+}
+
+.dial-label-north text {
+  fill: #ef4444;
+}
+
+.dial-needle {
+  stroke: var(--color-gold);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.dial-hub,
+.dial-lubber {
+  fill: var(--color-gold);
+}
+
+.kotel rect {
+  fill: #e6c47a;
+  stroke: #8a6a2a;
+}
+
+.kotel line {
+  stroke: #8a6a2a;
+  stroke-width: 1;
+}
+
+.compass-dial.north-up .dial-lubber {
+  display: none;
+}
+
+.compass-dial.aligned .dial-face {
+  stroke: var(--color-success);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.6));
+}
+
+.compass-dial.aligned .dial-needle {
+  stroke: var(--color-success);
+}
+
+.compass-dial.aligned .dial-hub,
+.compass-dial.aligned .dial-lubber {
+  fill: var(--color-success);
+}
+
+.compass-readout {
+  text-align: center;
+}
+
+.compass-deg {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.1;
+  color: var(--accent-strong);
+  direction: ltr;
+}
+
+.compass-dir {
+  font-size: var(--font-size-md);
+}
+
+.compass-hint {
+  display: inline-block;
+  margin-top: var(--space-sm);
+  padding: var(--space-sm) 18px;
+  font-size: 0.95rem;
+  font-weight: var(--font-weight-semibold);
+  background: var(--surface-soft);
+  border: 1px solid rgba(212, 168, 87, 0.45);
+  border-radius: 999px;
+}
+
+.compass-hint.aligned {
+  color: #86efac;
+  background: rgba(74, 222, 128, 0.16);
+  border-color: rgba(74, 222, 128, 0.6);
+}
+
+:root[data-theme="light"] .compass-hint.aligned {
+  color: #047857;
+}
+
+.compass-permission-icon {
+  display: block;
+  width: 96px;
+  height: 96px;
+  margin: var(--space-sm) auto var(--space-md);
+  fill: none;
+  stroke: var(--accent-strong);
+  stroke-width: 1.2;
+}
+
+.compass-permission-icon path {
+  fill: var(--accent-strong);
+}
+
+.compass-text {
+  margin-bottom: var(--space-lg);
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-on-panel-muted);
+}
+
+.compass-text strong {
+  color: var(--accent-strong);
+}
+
+.compass-wide-btn {
+  width: 100%;
+  font-weight: var(--font-weight-bold);
+}
+
+.compass-link-btn {
+  margin-top: var(--space-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  color: var(--text-on-panel-muted);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.compass-near-art {
+  width: 200px;
+  margin: var(--space-sm) auto var(--space-md);
+}
+
+.compass-near-art svg {
+  display: block;
+  width: 100%;
+}
+
+.compass-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding: 12px 14px;
+  font-size: var(--font-size-sm);
+  color: var(--text-on-panel-muted);
+  background: var(--surface-soft);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+}
+
+.compass-meta b {
+  font-weight: var(--font-weight-semibold);
+  color: var(--accent-strong);
+}
+
+.compass-meta span:last-child {
+  white-space: nowrap;
+}
+
+.compass-note {
+  margin-top: var(--space-md);
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--text-on-panel-faint);
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -1693,7 +2006,8 @@ body::before {
 .footer {
   text-align: center;
   padding: var(--space-lg);
-  padding-bottom: calc(var(--space-2xl) + var(--safe-area-bottom));
+  /* Leave room so the floating buttons never cover the footer text */
+  padding-bottom: calc(48px + 2 * var(--space-lg) + var(--safe-area-bottom));
   color: var(--text-on-panel-faint);
   font-size: var(--font-size-xs);
 }
@@ -1876,6 +2190,7 @@ body::before {
   
   .btn,
   .btn-settings,
+  .btn-compass-fab,
   .action-bar {
     display: none;
   }
@@ -2186,7 +2501,8 @@ input, select, textarea {
 
 /* Fix for notch on newer iPhones - the inset is applied once, on the body */
 @supports (padding-top: env(safe-area-inset-top)) {
-  .btn-settings {
+  .btn-settings,
+  .btn-compass-fab {
     bottom: calc(var(--space-lg) + env(safe-area-inset-bottom));
   }
 }
