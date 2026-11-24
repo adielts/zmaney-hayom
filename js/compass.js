@@ -5,6 +5,7 @@
  */
 
 import { isJerusalemArea } from './api.js';
+import { getCurrentLocation, getPermissionState } from './location.js';
 
 // Even HaShtiya / Kodesh HaKodashim
 const TARGET = { latitude: 31.7780, longitude: 35.2354 };
@@ -13,6 +14,9 @@ const ALIGN_TOLERANCE_DEG = 5;
 const NO_SENSOR_TIMEOUT_MS = 1500;
 const SMOOTHING = 0.2;
 const METHOD_STORAGE_KEY = 'zmaneyHayom_compassMethod';
+const GPS_MAX_AGE_MS = 60 * 1000;
+const GPS_TIMEOUT_MS = 15000;
+const SAME_PLACE_KM = 3;
 const DIRECTIONS = ['צפון', 'צפון-מזרח', 'מזרח', 'דרום-מזרח', 'דרום', 'דרום-מערב', 'מערב', 'צפון-מערב'];
 
 const DIAL_SIZE = 300;
@@ -160,7 +164,13 @@ function buildDialSvg(bearing) {
 // State
 // ============================================
 let elements = {};
+// The zmanim location may be a 7-day-old cache, a manually picked city or the
+// Jerusalem default - fine for zmanim, wrong for a compass. The compass uses
+// its own fresh GPS fix and only falls back to it with a visible warning.
 let currentLocation = null;
+let gpsLocation = null;
+let gpsStatus = 'idle'; // 'idle' | 'locating' | 'ok' | 'failed'
+let gpsRequestId = 0;
 let isOpen = false;
 let bearing = null;
 let sensorMode = 'pending'; // 'pending' | 'live' | 'none'
@@ -264,24 +274,71 @@ function getSubtitle(inJerusalem, inIsrael) {
     return 'לעבר ארץ ישראל וירושלים';
 }
 
+function getPlaceName() {
+    if (!gpsLocation) return currentLocation.cityName || currentLocation.name || '';
+    if (currentLocation && distanceKm(gpsLocation, currentLocation) < SAME_PLACE_KM) {
+        return currentLocation.cityName || currentLocation.name || 'המיקום הנוכחי שלך';
+    }
+    return 'המיקום הנוכחי שלך';
+}
+
+function renderLocationWarning(place) {
+    let text = '';
+    if (!gpsLocation) {
+        text = gpsStatus === 'locating'
+            ? 'מאתר את מיקומך המדויק...'
+            : `⚠️ לא התקבל מיקום GPS – הכיוון מחושב לפי "${place}". אם אינך שם, הכיוון שגוי.`;
+    }
+    elements.locationWarning.textContent = text;
+    elements.locationWarning.hidden = !text;
+}
+
+/**
+ * Get a fresh GPS fix for the compass, independent of the zmanim location
+ */
+async function refreshGpsLocation() {
+    const requestId = ++gpsRequestId;
+    gpsStatus = 'locating';
+
+    try {
+        if (await getPermissionState() === 'denied') throw new Error('Location permission denied');
+        const { latitude, longitude } = await getCurrentLocation({
+            maximumAge: GPS_MAX_AGE_MS,
+            timeout: GPS_TIMEOUT_MS
+        });
+        if (requestId !== gpsRequestId) return;
+        gpsLocation = { latitude, longitude, timestamp: Date.now() };
+        gpsStatus = 'ok';
+    } catch (error) {
+        if (requestId !== gpsRequestId) return;
+        console.warn('Compass GPS location failed:', error.message);
+        gpsStatus = 'failed';
+    }
+    if (isOpen) render();
+}
+
 function render() {
-    if (!currentLocation) {
+    const location = gpsLocation || currentLocation;
+    if (!location) {
         elements.subtitle.textContent = 'מאתר מיקום...';
         elements.place.textContent = '—';
         elements.distance.textContent = '—';
+        elements.locationWarning.hidden = true;
         showSection('none');
         stopSensor();
         return;
     }
 
-    const { latitude, longitude } = currentLocation;
+    const { latitude, longitude } = location;
     const inJerusalem = isJerusalemArea(latitude, longitude);
     const inIsrael = isInIsrael(latitude, longitude);
-    const km = distanceKm(currentLocation, TARGET);
+    const km = distanceKm(location, TARGET);
+    const place = getPlaceName();
 
     elements.subtitle.textContent = km < NEAR_KOTEL_KM ? 'אתה ליד הכותל המערבי' : getSubtitle(inJerusalem, inIsrael);
-    elements.place.textContent = currentLocation.cityName || currentLocation.name || '';
+    elements.place.textContent = place;
     elements.distance.textContent = formatDistance(km);
+    renderLocationWarning(place);
     alignedText = inJerusalem ? 'אתה מכוון להר הבית' : 'אתה מכוון לירושלים';
 
     if (km < NEAR_KOTEL_KM) {
@@ -291,7 +348,7 @@ function render() {
     }
 
     const method = inIsrael ? 'greatCircle' : getMethod();
-    bearing = method === 'rhumb' ? rhumbBearing(currentLocation, TARGET) : greatCircleBearing(currentLocation, TARGET);
+    bearing = method === 'rhumb' ? rhumbBearing(location, TARGET) : greatCircleBearing(location, TARGET);
 
     elements.method.hidden = inIsrael;
     elements.methodButtons.forEach((btn) => {
@@ -387,6 +444,10 @@ function openCompass() {
     elements.modal.classList.add('active');
     elements.overlay.classList.add('active');
     elements.fab.setAttribute('aria-expanded', 'true');
+    if (gpsLocation && Date.now() - gpsLocation.timestamp > GPS_MAX_AGE_MS) {
+        gpsLocation = null;
+    }
+    refreshGpsLocation();
     render();
     elements.close.focus();
 }
@@ -421,6 +482,7 @@ export function initCompass() {
         overlay: document.getElementById('compass-overlay'),
         close: document.getElementById('compass-close'),
         subtitle: document.getElementById('compass-subtitle'),
+        locationWarning: document.getElementById('compass-location-warning'),
         permission: document.getElementById('compass-permission'),
         permissionBtn: document.getElementById('compass-permission-btn'),
         skipBtn: document.getElementById('compass-skip-btn'),

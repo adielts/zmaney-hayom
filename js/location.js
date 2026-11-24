@@ -67,10 +67,11 @@ async function onPermissionChange(callback) {
 
 /**
  * Gets the current geographic position using browser Geolocation API
+ * @param {PositionOptions} [overrides] - Overrides for the geolocation options
  * @returns {Promise<{latitude: number, longitude: number}>} Coordinates object
  * @throws {Error} If geolocation fails or is denied
  */
-async function getCurrentLocation() {
+async function getCurrentLocation(overrides = {}) {
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
             reject(new Error('Geolocation is not supported by this browser'));
@@ -80,7 +81,8 @@ async function getCurrentLocation() {
         const options = {
             enableHighAccuracy: true,
             timeout: 10000,
-            maximumAge: 300000 // 5 minutes cache
+            maximumAge: 300000, // 5 minutes cache
+            ...overrides
         };
 
         navigator.geolocation.getCurrentPosition(
